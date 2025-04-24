@@ -1,0 +1,9 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="60" height="60" rx="12" fill="#6366F1"/>
+  <path d="M17 20C17 18.9 17.9 18 19 18H41C42.1 18 43 18.9 43 20V35C43 36.1 42.1 37 41 37H29L23 42V37H19C17.9 37 17 36.1 17 35V20Z"
+        fill="white"/>
+  <circle cx="22" cy="28" r="1.5" fill="#6366F1"/>
+  <circle cx="27" cy="28" r="1.5" fill="#6366F1"/>
+  <circle cx="32" cy="28" r="1.5" fill="#6366F1"/>
+  <text x="70" y="38" fill="#6366F1" font-family="Arial, sans-serif" font-size="28" font-weight="bold">SMS</text>
+</svg>

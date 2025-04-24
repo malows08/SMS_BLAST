@@ -1,0 +1,134 @@
+/* QuickSend.css */
+
+.quick-send {
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+    padding: 20px;
+  }
+  
+  .quick-send header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+  
+  .quick-send header h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .quick-send header nav {
+    font-size: 12px;
+    color: #777;
+  }
+  
+  .quick-send header nav a {
+    color: #777;
+    text-decoration: none;
+  }
+  
+  .quick-send .notification {
+    background-color: #e1f5fe;
+    color: #01579b;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  
+  .quick-send .form-container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .quick-send .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .quick-send .form-group label {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+    display: block;
+  }
+  
+  .quick-send .form-group select,
+  .quick-send .form-group input[type="text"],
+  .quick-send .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .quick-send .form-group select {
+    height: 36px;
+  }
+  
+  .quick-send .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  .quick-send .form-group .note {
+    font-size: 12px;
+    color: #777;
+    margin-top: 5px;
+  }
+  
+  .quick-send .form-group .note a {
+    color: #0277bd;
+  }
+  
+  .quick-send .form-group .formatting-buttons {
+    margin-top: 5px;
+  }
+  
+  .quick-send .form-group .formatting-buttons button {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 10px;
+    margin-right: 5px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  
+  .quick-send .form-group .remaining-characters {
+    font-size: 12px;
+    color: #777;
+    margin-top: 5px;
+    text-align: right;
+  }
+  
+  .quick-send .buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-start; /* Align buttons to the left */
+  }
+  
+  .quick-send .buttons button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-right: 10px; /* Add spacing between buttons */
+  }
+  
+  .quick-send .buttons .preview-button {
+    background-color: #80deea;
+    color: #000;
+  }
+  
+  .quick-send .buttons .send-button {
+    background-color: #7e57c2;
+    color: white;
+  }
+  
+  .quick-send .sender-id-container {
+      display: flex;
+      justify-content: space-between;
+  }
+  

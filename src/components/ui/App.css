@@ -1,0 +1,85 @@
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* input, textarea, select {
+    width: 10px;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+} */
+
+textarea {
+    height: 100px;
+    resize: none;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+} */
+
+
+.button {
+    padding: 10px 20px; /* Adjust padding for button size */
+    border: none; /* Remove default border */
+    border-radius: 50px; /* Adjust value for more or less roundness */
+    color: white; /* Text color */
+    background-color: #007BFF; /* Button color */
+    cursor: pointer; /* Change cursor on hover */
+    font-size: 16px; /* Font size */
+}
+
+/* button:hover {
+    background-color: #0056b3;
+} */
+ 
+.button-container {
+    display: flex;
+    justify-content: space-between; /* Distributes space between buttons */
+    width: 100%; /* Adjust as necessary */
+}
+.brndtxtcontainer {
+    display: flex;
+    justify-content: flex-end; /* Align items to the right */
+    align-items: center; /* Center the items vertically, if needed */
+    /* Add any additional styling like padding/margin */
+  }
+
+.preview-button {
+    background-color: #00BFFF; /* Example color */
+    color: white;
+    border-radius: 4px; /* Adjust value for more or less roundness */
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.send-button {
+    background-color: #8A2BE2; /* Example color */
+    color: white;
+    border: none;
+    border-radius: 4px; 
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.icon-send {
+    margin-right: 5px; /* Space between icon and text */
+}
