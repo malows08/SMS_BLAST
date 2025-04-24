@@ -1,26 +1,34 @@
 import { useEffect, useState } from "react";
 import { apiConfig } from "../../settings"; // Importing the centralized API config
 import { useRefresh } from "../utils/RefreshContext";// Import the context
+import { useSmsProvider } from "../../context/SmsProviderContext";
 
 const CreditsPage: React.FC = () => {
   const { refreshKey } = useRefresh(); // Get the refresh key
   const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { provider } = useSmsProvider();
 
 
   const fetchCredits = async () => {
+    const apiKeyToUse =
+      provider === "kizuna-sms" ? apiConfig.newEncodedApiKey : apiConfig.encodedApiKey;
+    const clientIdToUse =
+      provider === "kizuna-sms" ? apiConfig.newClientId : apiConfig.clientId;
+  
     try {
-      const apiKeyToUse = apiConfig.encodedApiKey;
       const response = await fetch(
-        `https://app.brandtxt.io/api/v2/Balance?ApiKey=${apiKeyToUse}&ClientId=${apiConfig.clientId}`
+        `https://app.brandtxt.io/api/v2/Balance?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}`
       );
-      //console.log(response)
+      console.log(response)
       if (!response.ok) {
         throw new Error("Failed to fetch credits");
       }
+  
       const data = await response.json();
-      setCredits(data.Data[0].Credits);// Assuming 'balance' is the key returned
+      setCredits(data.Data[0].Credits); // Assuming 'Credits' is the correct field
+      //console.log(data.Data[0].Credits)
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -37,7 +45,7 @@ const CreditsPage: React.FC = () => {
 
     // Clean up the interval on component unmount
     return () => clearInterval(intervalId);
-  }, [refreshKey]); // Add refreshKey as a dependency
+  }, [provider]); // Add refreshKey as a dependency
 
   if (loading) {
     return <div>Loading...</div>;

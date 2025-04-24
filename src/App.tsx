@@ -22,6 +22,7 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import { Toaster } from 'react-hot-toast';
 import { SenderIdProvider } from "./context/SenderIdContext";
+import { SmsProvider } from "./context/SmsProviderContext";
 
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
       <Toaster position="top-right" />
       <Router>
         <ScrollToTop />
+        <SmsProvider>
         <Routes>
           {/* Default route goes to SignIn */}
           <Route path="/" element={<SignIn />} />
@@ -59,6 +61,7 @@ export default function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </SmsProvider>
       </Router>
     </SenderIdProvider>
   );

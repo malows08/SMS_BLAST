@@ -5,6 +5,8 @@ import { Loader2 } from "lucide-react"; // Loader component for indicating loadi
 import * as XLSX from "xlsx";
 import { apiConfig } from "../../settings"; // Importing the centralized API config
 import { useRefresh } from "../../components/utils/RefreshContext";// Import the context
+import { useSmsProvider } from "../../context/SmsProviderContext";
+
 
 export default function KizunaSMS() {
   const { refresh } = useRefresh(); // Get the refresh function from context
@@ -26,9 +28,11 @@ export default function KizunaSMS() {
   });
   const [refreshLogs, setRefreshLogs] = useState(false);
   const maxLength = 1500;
+  const { setProvider } = useSmsProvider();
 
   // Fetch sender IDs and group ID
   useEffect(() => {
+    setProvider("kizuna-sms");
     const fetchSenderIds = async () => {
       setLoadingSenderIds(true);
       try {
@@ -39,7 +43,7 @@ export default function KizunaSMS() {
         console.log(data)
         if (data && Array.isArray(data.Data)) {
           const ids = data.Data.map((item: any) => item.SenderId);
-          //console.log(ids)
+          console.log(ids)
           setSenderIds(ids);
           if (ids.length > 0) {
             setSelectedSenderId(ids[0]);
@@ -70,7 +74,8 @@ export default function KizunaSMS() {
     };
 
     fetchGroupId();
-  }, []);
+    return () => setProvider("default"); // Reset it when leaving this page
+  }, [setProvider]);
 
   // Helper function to chunk the array of numbers
   const chunkArray = (arr, size) => {
