@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiConfig } from "../../settings"; // Importing the centralized API config
-import { useRefresh } from "../utils/RefreshContext";// Import the context
+import { useRefresh } from "../../context/RefreshContext";// Import the context
 import { useSmsProvider } from "../../context/SmsProviderContext";
 
 const CreditsPage: React.FC = () => {
@@ -21,14 +21,13 @@ const CreditsPage: React.FC = () => {
       const response = await fetch(
         `https://app.brandtxt.io/api/v2/Balance?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}`
       );
-      console.log(response)
       if (!response.ok) {
         throw new Error("Failed to fetch credits");
       }
   
       const data = await response.json();
       setCredits(data.Data[0].Credits); // Assuming 'Credits' is the correct field
-      //console.log(data.Data[0].Credits)
+      console.log(data.Data[0].Credits)
     } catch (error: any) {
       setError(error.message);
     } finally {

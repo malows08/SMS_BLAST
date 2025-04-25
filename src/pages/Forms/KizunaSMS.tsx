@@ -4,12 +4,14 @@ import SMSLogsGrid from "../../components/grid/SMSLogsGrid"; // Import grid for 
 import { Loader2 } from "lucide-react"; // Loader component for indicating loading state
 import * as XLSX from "xlsx";
 import { apiConfig } from "../../settings"; // Importing the centralized API config
-import { useRefresh } from "../../components/utils/RefreshContext";// Import the context
+import { useRefresh } from "../../context/RefreshContext.tsx";// Import the context
 import { useSmsProvider } from "../../context/SmsProviderContext";
+import { useSenderId } from "../../context/SenderIdContext";
 
 
 export default function KizunaSMS() {
   const { refresh } = useRefresh(); // Get the refresh function from context
+  const { setKeys } = useSenderId(); //for sender id to be display on the header
   // State variables for SMS form
   const [message, setMessage] = useState("");
   const [unicode, setUnicode] = useState(true);
@@ -33,6 +35,7 @@ export default function KizunaSMS() {
   // Fetch sender IDs and group ID
   useEffect(() => {
     setProvider("kizuna-sms");
+    setKeys(apiConfig.newEncodedApiKey, apiConfig.newClientId);
     const fetchSenderIds = async () => {
       setLoadingSenderIds(true);
       try {
@@ -74,8 +77,11 @@ export default function KizunaSMS() {
     };
 
     fetchGroupId();
-    return () => setProvider("default"); // Reset it when leaving this page
-  }, [setProvider]);
+    return () => {
+      setProvider("default");
+      setKeys(apiConfig.encodedApiKey, apiConfig.clientId);
+    };
+  }, [setProvider, setKeys]);
 
   // Helper function to chunk the array of numbers
   const chunkArray = (arr, size) => {
