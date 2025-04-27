@@ -13,14 +13,17 @@ import { Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { apiConfig } from "../../settings";
 import { useRefresh } from "../../context/RefreshContext";
+import { useSmsProvider } from "../../context/SmsProviderContext";
+import toast from "react-hot-toast";
 
 export default function ComposeSMS() {
-  const { refresh, setApiKeys } = useRefresh();
-  const useKizuna = false; // make this dynamic later if needed
+  const { refresh } = useRefresh();
+  const { setProvider } = useSmsProvider(); // ✅ use Provider Context
 
-  const apiKeyToUse = useKizuna ? apiConfig.newEncodedApiKey : apiConfig.encodedApiKey;
-  const clientIdToUse = useKizuna ? apiConfig.newClientId : apiConfig.clientId;
-  const rawApiKeyToUse = useKizuna ? apiConfig.newApiKey : apiConfig.apiKey;
+  // 🛠 Default provider is "default" for ComposeSMS
+  useEffect(() => {
+    setProvider("default");
+  }, [setProvider]);
 
   const [message, setMessage] = useState("");
   const [unicode, setUnicode] = useState(true);
@@ -38,7 +41,16 @@ export default function ComposeSMS() {
     failed: 0,
   });
 
+  //for error message
+  const [messageError, setMessageError] = useState("");
+  const [contactsError, setContactsError] = useState("");
+
   const maxLength = 1500;
+
+  // 🔥 API keys always from Default here
+  const apiKeyToUse = apiConfig.encodedApiKey;
+  const clientIdToUse = apiConfig.clientId;
+  const rawApiKeyToUse = apiConfig.apiKey;
 
   useEffect(() => {
     const fetchSenderIds = async () => {
@@ -76,7 +88,7 @@ export default function ComposeSMS() {
 
     fetchSenderIds();
     fetchGroupId();
-  }, [apiKeyToUse, clientIdToUse]);
+  }, []);
 
   const chunkArray = (arr, size) => {
     const chunks = [];
@@ -87,17 +99,35 @@ export default function ComposeSMS() {
   };
 
   const handleSendSMS = async () => {
+    let hasError = false;
+    //errormessage for empty field
+    // Reset errors first
+    setMessageError("");
+    setContactsError("");
+    if (!message.trim()) {
+      setMessageError("⚠️ Message cannot be blank");
+      toast.error("❌ Message cannot be blank.");
+      hasError = true;
+    }
+
+    if (!contacts.trim()) {
+      setContactsError("⚠️ Contacts cannot be blank");
+      toast.error("❌ Contacts cannot be blank.");
+      hasError = true;
+    }
+
+    if (hasError) {
+      return; // ❌ Stop sending if there are errors
+    }
     setIsSending(true);
-    setApiKeys(apiKeyToUse, clientIdToUse);
 
     const allNumbers = contacts
       .split(",")
       .map((num) => num.trim())
-      .filter((num) =>
-        num.startsWith("63") ? num.length === 12 : num.length === 11
-      );
+      .filter((num) => (num.startsWith("63") ? num.length === 12 : num.length === 11));
 
     const numberChunks = chunkArray(allNumbers, 100);
+
     setSentMessages([]);
     setSendingProgress({ total: allNumbers.length, sent: 0, failed: 0 });
 
@@ -125,38 +155,38 @@ export default function ComposeSMS() {
 
       const payload = isBulk
         ? {
-            senderId: selectedSenderId,
-            isUnicode: unicode,
-            isFlash: flash,
-            scheduleDateTime: schedule ? new Date().toISOString() : "",
-            principleEntityId: "",
-            templateId: "",
-            messageParameters: chunk.map((num) => ({
-              number: num,
-              text: message,
-              serviceId: "",
-              coRelator: "",
-              linkId: "",
-            })),
-            apiKey: rawApiKeyToUse,
-            clientId: clientIdToUse,
-          }
-        : {
-            senderId: selectedSenderId,
-            is_Unicode: unicode,
-            is_Flash: flash,
-            schedTime: schedule ? new Date().toISOString() : "",
-            groupId: groupId,
-            message: message,
-            mobileNumbers: chunk.join(","),
+          senderId: selectedSenderId,
+          isUnicode: unicode,
+          isFlash: flash,
+          scheduleDateTime: schedule ? new Date().toISOString() : "",
+          principleEntityId: "",
+          templateId: "",
+          messageParameters: chunk.map((num) => ({
+            number: num,
+            text: message,
             serviceId: "",
             coRelator: "",
             linkId: "",
-            principleEntityId: "",
-            templateId: "",
-            apiKey: rawApiKeyToUse,
-            clientId: clientIdToUse,
-          };
+          })),
+          apiKey: rawApiKeyToUse,
+          clientId: clientIdToUse,
+        }
+        : {
+          senderId: selectedSenderId,
+          is_Unicode: unicode,
+          is_Flash: flash,
+          schedTime: schedule ? new Date().toISOString() : "",
+          groupId: groupId,
+          message: message,
+          mobileNumbers: chunk.join(","),
+          serviceId: "",
+          coRelator: "",
+          linkId: "",
+          principleEntityId: "",
+          templateId: "",
+          apiKey: rawApiKeyToUse,
+          clientId: clientIdToUse,
+        };
 
       const result = await sendToBrandtxt(payload, isBulk);
 
@@ -178,7 +208,7 @@ export default function ComposeSMS() {
     }
 
     setIsSending(false);
-    refresh(); // refresh other components using context
+    refresh();
   };
 
   const handleContactsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -256,9 +286,12 @@ export default function ComposeSMS() {
         <Textarea
           value={contacts}
           onChange={handleContactsChange}
-          placeholder="Enter 11-digit numbers only (comma added automatically)"
+          placeholder="Enter 11-digit numbers (comma-separated)"
           rows={4}
         />
+        {contactsError && (
+          <p className="text-red-500 text-sm mt-1">{contactsError}</p>
+        )}
         <div className="my-4">
           <Label>Upload Contacts (.csv or .xlsx)</Label>
           <Input type="file" accept=".csv, .xlsx" onChange={handleFileUpload} />
@@ -276,6 +309,9 @@ export default function ComposeSMS() {
           rows={5}
           maxLength={maxLength}
         />
+        {messageError && (
+          <p className="text-red-500 text-sm mt-1">{messageError}</p>
+        )}
         <div className="text-sm text-gray-500 mt-1">
           Used: {message.length} | Left: {maxLength - message.length} | SMS Count:{" "}
           {Math.ceil(message.length / 160)}
@@ -284,7 +320,7 @@ export default function ComposeSMS() {
 
       <div className="flex items-center gap-4">
         <Checkbox id="unicode" checked={unicode} onChange={() => setUnicode(!unicode)} />
-        <Label htmlFor="unicode">Unicode (Language SMS)</Label>
+        <Label htmlFor="unicode">Unicode</Label>
 
         <Checkbox id="flash" checked={flash} onChange={() => setFlash(!flash)} />
         <Label htmlFor="flash">Flash</Label>
@@ -315,8 +351,13 @@ export default function ComposeSMS() {
         </div>
       )}
 
+      {/* Send Button */}
       <div className="brndtxtcontainer">
-        <Button onClick={handleSendSMS} disabled={isSending}>
+        <Button
+          className="send-button"
+          onClick={handleSendSMS}
+          disabled={isSending}
+        >
           <i className="fa-solid fa-paper-plane"></i>
           {isSending ? (
             <div className="flex items-center gap-2">
@@ -329,7 +370,7 @@ export default function ComposeSMS() {
         </Button>
       </div>
 
-      <SMSLogsGrid />
+      <SMSLogsGrid /> {/* ✅ SMS Logs auto reload based on provider */}
     </div>
   );
 }

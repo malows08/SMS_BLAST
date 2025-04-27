@@ -19,21 +19,10 @@ export default function Home() {
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-50 xl:col-span-50">
           <EcommerceMetrics />
-
-          {/* <MonthlySalesChart /> */}
         </div>
-
-        {/* <div className="col-span-12 xl:col-span-5">
-          <MonthlyTarget />
-        </div> */}
-
         <div className="col-span-50">
           <StatisticsChart />
         </div>
-
-        {/* <div className="col-span-12 xl:col-span-5">
-          <DemographicCard />
-        </div> */}
 
         <div className="col-span-50">
         <SMSLogsGrid/>

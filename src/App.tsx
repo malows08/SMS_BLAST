@@ -27,11 +27,12 @@ import { SmsProvider } from "./context/SmsProviderContext";
 
 export default function App() {
   return (
+    <SmsProvider>
     <SenderIdProvider>
       <Toaster position="top-right" />
       <Router>
         <ScrollToTop />
-        <SmsProvider>
+      
         <Routes>
           {/* Default route goes to SignIn */}
           <Route path="/" element={<SignIn />} />
@@ -61,8 +62,8 @@ export default function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        </SmsProvider>
       </Router>
     </SenderIdProvider>
+    </SmsProvider>
   );
 }

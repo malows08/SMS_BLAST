@@ -1,22 +1,23 @@
 import { useEffect, useState } from "react";
-import { apiConfig } from "../../settings"; // Importing the centralized API config
-import { useRefresh } from "../../context/RefreshContext";// Import the context
+import { apiConfig } from "../../settings";
+import { useRefresh } from "../../context/RefreshContext";
 import { useSmsProvider } from "../../context/SmsProviderContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 const CreditsPage: React.FC = () => {
-  const { refreshKey } = useRefresh(); // Get the refresh key
-  const [credits, setCredits] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { refreshKey } = useRefresh();
   const { provider } = useSmsProvider();
-
+  const [credits, setCredits] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchCredits = async () => {
-    const apiKeyToUse =
-      provider === "kizuna-sms" ? apiConfig.newEncodedApiKey : apiConfig.encodedApiKey;
-    const clientIdToUse =
-      provider === "kizuna-sms" ? apiConfig.newClientId : apiConfig.clientId;
-  
+    setLoading(true);
+    setError(null);
+
+    const apiKeyToUse = provider === "kizuna-sms" ? apiConfig.newEncodedApiKey : apiConfig.encodedApiKey;
+    const clientIdToUse = provider === "kizuna-sms" ? apiConfig.newClientId : apiConfig.clientId;
+
     try {
       const response = await fetch(
         `https://app.brandtxt.io/api/v2/Balance?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}`
@@ -24,42 +25,70 @@ const CreditsPage: React.FC = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch credits");
       }
-  
+
       const data = await response.json();
-      setCredits(data.Data[0].Credits); // Assuming 'Credits' is the correct field
-      console.log(data.Data[0].Credits)
+      setCredits(data.Data[0]?.Credits ?? 0);
+      console.log("Fetched credits for", provider, ":", data.Data[0]?.Credits);
     } catch (error: any) {
+      console.error(error);
       setError(error.message);
     } finally {
-      setLoading(false);
+      // 🕒 Ensure loading spinner stays visible for at least 300ms
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
     }
   };
 
-  // Fetch credits on mount
+  // 🟰 Fetch credits whenever provider is ready
   useEffect(() => {
-    fetchCredits();
-
-    // Set up polling to refresh credits every 30 seconds
-    const intervalId = setInterval(fetchCredits, 30000); // 30 seconds interval
-
-    // Clean up the interval on component unmount
-    return () => clearInterval(intervalId);
-  }, [provider]); // Add refreshKey as a dependency
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+    if (provider) {
+      console.log("Provider is now:", provider);
+      fetchCredits(); // Fetch credits ONLY after provider is correct
+    }
+  }, [provider, refreshKey]);
 
   return (
     <div className="p-4">
-      {/* <h1 className="text-2xl font-semibold dark:text-white">Credits</h1> */}
-      <p className="text-lg dark:text-white">
-        Your current credits: {credits}
-      </p>
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-lg text-gray-600"
+          >
+            🔄 Loading credits...
+          </motion.div>
+        ) : error ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-red-600"
+          >
+            ⚠️ Error: {error}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="credits"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            className="text-lg dark:text-white"
+          >
+            🎯 Your current credits: <strong>{credits}</strong>
+
+            {/* Small badge */}
+            <div className="mt-2 text-sm text-gray-500">
+              Active Provider: {provider === "kizuna-sms" ? "🔵 KizunaSMS" : "🟢 Default"}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

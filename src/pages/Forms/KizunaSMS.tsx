@@ -7,6 +7,7 @@ import { apiConfig } from "../../settings"; // Importing the centralized API con
 import { useRefresh } from "../../context/RefreshContext.tsx";// Import the context
 import { useSmsProvider } from "../../context/SmsProviderContext";
 import { useSenderId } from "../../context/SenderIdContext";
+import toast from "react-hot-toast";
 
 
 export default function KizunaSMS() {
@@ -31,6 +32,10 @@ export default function KizunaSMS() {
   const [refreshLogs, setRefreshLogs] = useState(false);
   const maxLength = 1500;
   const { setProvider } = useSmsProvider();
+
+  //for error message
+  const [messageError, setMessageError] = useState("");
+  const [contactsError, setContactsError] = useState("");
 
   // Fetch sender IDs and group ID
   useEffect(() => {
@@ -77,10 +82,10 @@ export default function KizunaSMS() {
     };
 
     fetchGroupId();
-    return () => {
-      setProvider("default");
-      setKeys(apiConfig.encodedApiKey, apiConfig.clientId);
-    };
+    // return () => {
+    //   setProvider("default");
+    //   setKeys(apiConfig.encodedApiKey, apiConfig.clientId);
+    // };
   }, [setProvider, setKeys]);
 
   // Helper function to chunk the array of numbers
@@ -118,6 +123,26 @@ export default function KizunaSMS() {
 
   // Send SMS function
   const handleSendSMS = async () => {
+    let hasError = false;
+
+    // Reset errors first
+    setMessageError("");
+    setContactsError("");
+    if (!message.trim()) {
+      setMessageError("⚠️ Message cannot be blank");
+      toast.error("❌ Message cannot be blank.");
+      hasError = true;
+    }
+
+    if (!contacts.trim()) {
+      setContactsError("⚠️ Contacts cannot be blank");
+      toast.error("❌ Contacts cannot be blank.");
+      hasError = true;
+    }
+
+    if (hasError) {
+      return; // ❌ Stop sending if there are errors
+    }
     setIsSending(true);
 
     const allNumbers = contacts
@@ -176,8 +201,8 @@ export default function KizunaSMS() {
             coRelator: "",
             linkId: "",
           })),
-          apiKey: apiConfig.apiKey,  // Using the centralized API key
-          clientId: apiConfig.clientId,  // Using the centralized Client ID
+          apiKey: apiConfig.newApiKey,  // Using the centralized API key
+          clientId: apiConfig.newClientId,  // Using the centralized Client ID
         };
       } else {
         payload = {
@@ -193,11 +218,11 @@ export default function KizunaSMS() {
           linkId: "",
           principleEntityId: "",
           templateId: "",
-          apiKey: apiConfig.apiKey,  // Using the centralized API key
-          clientId: apiConfig.clientId,  // Using the centralized Client ID
+          apiKey: apiConfig.newApiKey,  // Using the centralized API key
+          clientId: apiConfig.newClientId,  // Using the centralized Client ID
         };
       }
-      //console.log(payload)
+      console.log(payload)
       const result = await sendToBrandtxt(payload, isBulk);
       //console.log(result)
       if (result && result.ErrorCode === 0 && Array.isArray(result.Data)) {
@@ -206,7 +231,7 @@ export default function KizunaSMS() {
           ...prev,
           sent: prev.sent + chunk.length,
         }));
-        
+
       } else {
         console.warn("Initial send failed:", result?.ErrorDescription || "Unknown error");
         setSendingProgress((prev) => ({
@@ -287,138 +312,127 @@ export default function KizunaSMS() {
     // <div className="container">
     <div className="bg-gray-100 p-4 rounded-xl min-h-screen">
       {/* <div className="bg-white p-6 rounded-md shadow-md max-w-4xl mx-auto"> */}
-        <h2 className="text-xl font-semibold mb-4 border-b pb-2">Compose SMS</h2>
+      <h2 className="text-xl font-semibold mb-4 border-b pb-2">Compose SMS</h2>
 
-        {/* Campaign Name Input */}
-        <div>
-          <Label>Campaign Name</Label>
-          <Input value={campaignName} readOnly />
+      {/* Campaign Name Input */}
+      <div>
+        <Label>Campaign Name</Label>
+        <Input value={campaignName} readOnly />
+      </div>
+
+      {/* Sender ID Selection */}
+      <div>
+        <Label>Sender ID</Label>
+        {loadingSenderIds ? (
+          <div className="flex items-center gap-2 text-gray-500">
+            <Loader2 className="animate-spin h-5 w-5" />
+            Loading sender IDs...
+          </div>
+        ) : (
+          <Select value={selectedSenderId} onValueChange={setSelectedSenderId}>
+            {senderIds.map((id) => (
+              <SelectItem key={id} value={id}>
+                {id}
+              </SelectItem>
+            ))}
+          </Select>
+        )}
+      </div>
+
+      {/* Contacts Input */}
+      <div>
+        <Label>Contacts</Label>
+        <Textarea
+          value={contacts}
+          onChange={handleContactsChange}
+          placeholder="Enter 11-digit numbers only (comma added automatically)"
+          rows={4}
+        />
+        {contactsError && (
+          <p className="text-red-500 text-sm mt-1">{contactsError}</p>
+        )}
+        <div className="my-4">
+          <Label>Upload Contacts (.csv or .xlsx)</Label>
+          <Input type="file" accept=".csv, .xlsx" onChange={handleFileUpload} />
+          <p className="text-sm text-gray-500 mt-1">The file should contain mobile numbers in a single column.</p>
         </div>
+      </div>
 
-        {/* Sender ID Selection */}
-        <div>
-          <Label>Sender ID</Label>
-          {loadingSenderIds ? (
-            <div className="flex items-center gap-2 text-gray-500">
-              <Loader2 className="animate-spin h-5 w-5" />
-              Loading sender IDs...
+
+      {/* Message Input */}
+      <div>
+        <Label>Enter Message</Label>
+        <Textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={5}
+          maxLength={maxLength}
+        />
+        {messageError && (
+          <p className="text-red-500 text-sm mt-1">{messageError}</p>
+        )}
+        <div className="text-sm text-gray-500 mt-1">
+          Used: {message.length} | Left: {maxLength - message.length} | SMS Count: {Math.ceil(message.length / 160)}
+        </div>
+      </div>
+
+      {/* Options */}
+      <div className="flex items-center gap-4">
+        <Checkbox id="unicode" checked={unicode} onChange={() => setUnicode(!unicode)} />
+        <Label htmlFor="unicode">Unicode (Language SMS)</Label>
+
+        <Checkbox id="flash" checked={flash} onChange={() => setFlash(!flash)} />
+        <Label htmlFor="flash">Flash</Label>
+      </div>
+
+      {/* Schedule Option */}
+      <div className="flex items-center gap-4">
+        <Checkbox id="schedule" checked={schedule} onChange={() => setSchedule(!schedule)} />
+        <Label htmlFor="schedule">Schedule</Label>
+      </div>
+
+      {/* Sending Progress */}
+      <div className="my-4">
+        <h3 className="font-semibold mb-2">📊 Sending Progress</h3>
+        <p>Total: {sendingProgress.total}</p>
+        <p>Sent: {sendingProgress.sent}</p>
+        <p>Failed: {sendingProgress.failed}</p>
+      </div>
+
+      {/* Sent Messages */}
+      {sentMessages.length > 0 && (
+        <div className="my-4">
+          <h4 className="font-semibold mb-2">📨 Sent Messages</h4>
+          <ul className="text-sm">
+            {sentMessages.map((msg, idx) => (
+              <li key={idx}>
+                📱 {msg.MobileNumber} → 🆔 {msg.MessageId}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Send Button */}
+      <div className="brndtxtcontainer">
+        <Button
+          className="send-button"
+          onClick={handleSendSMS}
+          disabled={isSending}
+        >
+          <i className="fa-solid fa-paper-plane"></i>
+          {isSending ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="animate-spin w-4 h-4" />
+              Sending...
             </div>
           ) : (
-            <Select value={selectedSenderId} onValueChange={setSelectedSenderId}>
-              {senderIds.map((id) => (
-                <SelectItem key={id} value={id}>
-                  {id}
-                </SelectItem>
-              ))}
-            </Select>
+            "Send"
           )}
-        </div>
-
-        {/* Contacts Input */}
-        <div>
-          <Label>Contacts</Label>
-          <Textarea
-            value={contacts}
-            onChange={handleContactsChange}
-            placeholder="Enter 11-digit numbers only (comma added automatically)"
-            rows={4}
-          />
-          <div className="my-4">
-            <Label>Upload Contacts (.csv or .xlsx)</Label>
-            <Input type="file" accept=".csv, .xlsx" onChange={handleFileUpload} />
-            <p className="text-sm text-gray-500 mt-1">The file should contain mobile numbers in a single column.</p>
-          </div>
-        </div>
-
-
-        {/* Message Input */}
-        <div>
-          <Label>Enter Message</Label>
-          <Textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            rows={5}
-            maxLength={maxLength}
-          />
-          <div className="text-sm text-gray-500 mt-1">
-            Used: {message.length} | Left: {maxLength - message.length} | SMS Count: {Math.ceil(message.length / 160)}
-          </div>
-        </div>
-
-        {/* Options */}
-        <div className="flex items-center gap-4">
-          <Checkbox id="unicode" checked={unicode} onChange={() => setUnicode(!unicode)} />
-          <Label htmlFor="unicode">Unicode (Language SMS)</Label>
-
-          <Checkbox id="flash" checked={flash} onChange={() => setFlash(!flash)} />
-          <Label htmlFor="flash">Flash</Label>
-        </div>
-
-        {/* Schedule Option */}
-        <div className="flex items-center gap-4">
-          <Checkbox id="schedule" checked={schedule} onChange={() => setSchedule(!schedule)} />
-          <Label htmlFor="schedule">Schedule</Label>
-        </div>
-
-        {/* Sending Progress */}
-        <div className="my-4">
-          <h3 className="font-semibold mb-2">📊 Sending Progress</h3>
-          <p>Total: {sendingProgress.total}</p>
-          <p>Sent: {sendingProgress.sent}</p>
-          <p>Failed: {sendingProgress.failed}</p>
-        </div>
-
-        {/* Sent Messages */}
-        {sentMessages.length > 0 && (
-          <div className="my-4">
-            <h4 className="font-semibold mb-2">📨 Sent Messages</h4>
-            <ul className="text-sm">
-              {sentMessages.map((msg, idx) => (
-                <li key={idx}>
-                  📱 {msg.MobileNumber} → 🆔 {msg.MessageId}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Send Button */}
-        <div className="brndtxtcontainer">
-          <Button
-            className="send-button"
-            onClick={handleSendSMS}
-            disabled={isSending}
-          >
-            <i className="fa-solid fa-paper-plane"></i>
-            {isSending ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="animate-spin w-4 h-4" />
-                Sending...
-              </div>
-            ) : (
-              "Send"
-            )}
-          </Button>
-        </div>
-        {/* <div className="button-container">
-          <Button
-            className="send-button"
-            onClick={handleSendSMS}
-            disabled={isSending}
-          > <i className="fa-solid fa-paper-plane"></i>
-            {isSending ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="animate-spin w-4 h-4" />
-                Sending...
-              </div>
-            ) : (
-              "Send"
-            )}
-          </Button>
-        </div> */}
-
-        <SMSLogsGrid key={refreshLogs ? "reload-1" : "reload-0"} />
+        </Button>
       </div>
-    
+      <SMSLogsGrid />
+    </div>
+
   );
 }

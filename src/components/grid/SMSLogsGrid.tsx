@@ -3,13 +3,14 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { apiConfig } from "../../settings"; // Importing the centralized API config
+import { apiConfig } from "../../settings";
+import { useSmsProvider } from "../../context/SmsProviderContext";
 
 const SMSLogsGrid = () => {
-  const [logs, setLogs] = useState([]);
-  const [fromDate, setFromDate] = useState("2025-04-03");
+  const { provider } = useSmsProvider();
   const today = new Date().toISOString().split("T")[0];
-  const [endDate, setEndDate] = useState(today);
+  const [logs, setLogs] = useState([]);
+  const [endDate] = useState(today); // Always today's date
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -18,12 +19,15 @@ const SMSLogsGrid = () => {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const apiKeyToUse = apiConfig.apiKey;
+      const isKizuna = provider === "kizuna-sms";
+      const apiKeyToUse = isKizuna ? apiConfig.newApiKey : apiConfig.apiKey;
+      const clientIdToUse = isKizuna ? apiConfig.newClientId : apiConfig.clientId;
+
       const response = await axios.get(
-        `https://app.brandtxt.io/api/v2/GetSMS?ApiKey=${apiKeyToUse}&ClientId=${apiConfig.clientId}&start=0&length=100&fromdate=${endDate}&enddate=${endDate}`
+        `https://app.brandtxt.io/api/v2/GetSMS?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}&start=0&length=100&fromdate=${endDate}&enddate=${endDate}`
       );
       setLogs(response.data.Data || []);
-      toast.success("SMS logs refreshed.");
+      toast.success(`SMS logs refreshed (${isKizuna ? "KizunaSMS" : "Default"} provider).`);
     } catch (error) {
       console.error("Error fetching logs:", error);
       toast.error("Failed to refresh logs.");
@@ -33,8 +37,17 @@ const SMSLogsGrid = () => {
   };
 
   useEffect(() => {
-    fetchLogs();
-  }, []);
+    const refreshLogs = async () => {
+      if (provider) {
+        setLogs([]); // clear old logs first
+        toast.loading(`Fetching logs for ${provider === "kizuna-sms" ? "KizunaSMS" : "Default"}...`);
+        await fetchLogs();
+        toast.dismiss();
+      }
+    };
+
+    refreshLogs();
+  }, [provider]); // 🚀 Only listen to provider change
 
   const filteredLogs = logs.filter((log) =>
     log.MobileNumber.includes(search) || log.Status.toLowerCase().includes(search.toLowerCase())
@@ -58,25 +71,23 @@ const SMSLogsGrid = () => {
     <div className="p-4 bg-white shadow rounded-md">
       <h2 className="text-lg font-semibold mb-4">📋 SMS Delivery Logs</h2>
 
+      {/* Button bar */}
       <div className="flex flex-wrap gap-4 mb-4">
-        {/* <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-          className="border p-2 rounded w-[150px]"
-        />
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="border p-2 rounded w-[150px]"
-        /> */}
         <button
           onClick={fetchLogs}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          disabled={loading}
         >
-          🔄 Refresh
+          {loading ? (
+            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
+            </svg>
+          ) : (
+            <>🔄 Refresh</>
+          )}
         </button>
+
         <input
           type="text"
           placeholder="Search number or status"
@@ -87,6 +98,7 @@ const SMSLogsGrid = () => {
           }}
           className="border p-2 rounded w-[240px]"
         />
+
         <button
           onClick={exportToExcel}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
@@ -94,6 +106,8 @@ const SMSLogsGrid = () => {
           📥 Export
         </button>
       </div>
+
+      {/* Table */}
       {loading ? (
         <div className="text-center py-8 text-blue-600 font-semibold">🔄 Loading logs...</div>
       ) : (
@@ -120,10 +134,7 @@ const SMSLogsGrid = () => {
                   <td className="p-2 border">{log.SubmitDate}</td>
                   <td className="p-2 border">{log.DoneDate}</td>
                   <td className="p-2 border">{log.MessageId}</td>
-                  <td
-                    className={`p-2 border font-bold ${log.Status === "DELIVRD" ? "text-green-600" : "text-red-600"
-                      }`}
-                  >
+                  <td className={`p-2 border font-bold ${log.Status === "DELIVRD" ? "text-green-600" : "text-red-600"}`}>
                     {log.Status}
                   </td>
                   <td className="p-2 border">{log.ErrorCode}</td>
@@ -133,6 +144,7 @@ const SMSLogsGrid = () => {
           </table>
         </div>
       )}
+
       {/* Pagination */}
       <div className="mt-4 flex justify-between items-center">
         <span className="text-sm">

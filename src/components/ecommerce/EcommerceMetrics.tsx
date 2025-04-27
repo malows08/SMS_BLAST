@@ -3,6 +3,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { MessageCircle, CheckCircle } from "lucide-react";
 import { apiConfig } from "../../settings"; // Importing the centralized API config
+import { useSmsProvider } from "../../context/SmsProviderContext";
 
 export default function EcommerceMetrics() {
     const [stats, setStats] = useState({
@@ -15,25 +16,28 @@ export default function EcommerceMetrics() {
     const [error, setError] = useState("");
     const today = new Date().toISOString().split("T")[0];
     const [endDate] = useState(today);
+    const { provider } = useSmsProvider(); //provider switching
 
     useEffect(() => {
         const fetchSMSStats = async () => {
             setLoading(true);
             setError("");
             try {
-                const apiKeyToUse = apiConfig.apiKey;
+                const isKizuna = provider === "kizuna-sms";
+                const apiKeyToUse = isKizuna ? apiConfig.newApiKey : apiConfig.apiKey;
+                const clientIdToUse = isKizuna ? apiConfig.newClientId : apiConfig.clientId;
+        
                 const response = await axios.get(
-                    `https://app.brandtxt.io/api/v2/ReportSummary?ApiKey=${apiKeyToUse}&ClientId=${apiConfig.clientId}&start=0&length=100&fromdate=${endDate}&enddate=${endDate}`
-                  );
+                    `https://app.brandtxt.io/api/v2/ReportSummary?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}&start=0&length=100&fromdate=${endDate}&enddate=${endDate}`
+                );
+        
                 const data = response.data;
-
-                //console.log(response.data);
-
+        
                 setStats({
-                    totalSent: data.Data[0].TOTALCOUNT ?? 0,
-                    totalDelivered: data.Data[0].DELIVRD ?? 0,
-                    sentYesterday: data.Data[0].SUBMITTED ?? 0,
-                    deliveredYesterday: data.Data[0].ACCEPTD ?? 0,
+                    totalSent: data.Data[0]?.TOTALCOUNT ?? 0,
+                    totalDelivered: data.Data[0]?.DELIVRD ?? 0,
+                    sentYesterday: data.Data[0]?.SUBMITTED ?? 0,
+                    deliveredYesterday: data.Data[0]?.ACCEPTD ?? 0,
                 });
             } catch (err) {
                 console.error("Failed to fetch SMS stats", err);
@@ -43,8 +47,10 @@ export default function EcommerceMetrics() {
             }
         };
 
-        fetchSMSStats();
-    }, []);
+        if(provider){
+            fetchSMSStats();
+        }
+    }, [provider]);
 
     return (
         <div className="flex flex-col gap-y-4">
