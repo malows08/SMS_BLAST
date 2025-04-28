@@ -23,47 +23,44 @@ import Home from "./pages/Dashboard/Home";
 import { Toaster } from 'react-hot-toast';
 import { SenderIdProvider } from "./context/SenderIdContext";
 import { SmsProvider } from "./context/SmsProviderContext";
-
+import { RefreshProvider } from "./context/RefreshContext"; // ✅ Import this
 
 export default function App() {
   return (
-    <SmsProvider>
-    <SenderIdProvider>
-      <Toaster position="top-right" />
-      <Router>
-        <ScrollToTop />
-      
-        <Routes>
-          {/* Default route goes to SignIn */}
-          <Route path="/" element={<SignIn />} />
+    <RefreshProvider> {/* ✅ Wrap everything inside RefreshProvider */}
+      <SmsProvider>
+        <SenderIdProvider>
+          <Toaster position="top-center" reverseOrder={false} /> {/* ✅ Moved to center */}
+          <Router>
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={<SignIn />} />
+              <Route path="/dashboard" element={<AppLayout />}>
+                <Route index element={<Home />} />
+                <Route path="profile" element={<UserProfiles />} />
+                <Route path="calendar" element={<Calendar />} />
+                <Route path="blank" element={<Blank />} />
+                <Route path="form-elements" element={<FormElements />} />
+                <Route path="kizuna-sms" element={<KizunaSMS />} />
+                <Route path="quick-send" element={<QuickSend />} />
+                <Route path="basic-tables" element={<BasicTables />} />
+                <Route path="alerts" element={<Alerts />} />
+                <Route path="avatars" element={<Avatars />} />
+                <Route path="badge" element={<Badges />} />
+                <Route path="buttons" element={<Buttons />} />
+                <Route path="images" element={<Images />} />
+                <Route path="videos" element={<Videos />} />
+                <Route path="line-chart" element={<LineChart />} />
+                <Route path="bar-chart" element={<BarChart />} />
+              </Route>
 
-          {/* Dashboard Layout moved under /dashboard */}
-          <Route path="/dashboard" element={<AppLayout />}>
-            <Route index element={<Home />} />
-            <Route path="profile" element={<UserProfiles />} />
-            <Route path="calendar" element={<Calendar />} />
-            <Route path="blank" element={<Blank />} />
-            <Route path="form-elements" element={<FormElements />} />
-            <Route path="kizuna-sms" element={<KizunaSMS />} />
-            <Route path="quick-send" element={<QuickSend />} />
-            <Route path="basic-tables" element={<BasicTables />} />
-            <Route path="alerts" element={<Alerts />} />
-            <Route path="avatars" element={<Avatars />} />
-            <Route path="badge" element={<Badges />} />
-            <Route path="buttons" element={<Buttons />} />
-            <Route path="images" element={<Images />} />
-            <Route path="videos" element={<Videos />} />
-            <Route path="line-chart" element={<LineChart />} />
-            <Route path="bar-chart" element={<BarChart />} />
-          </Route>
-
-          {/* Auth */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-    </SenderIdProvider>
-    </SmsProvider>
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+        </SenderIdProvider>
+      </SmsProvider>
+    </RefreshProvider>
   );
 }

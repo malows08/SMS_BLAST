@@ -1,55 +1,61 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { apiConfig } from "../../settings";
+import { useRefresh } from "../../context/RefreshContext";
 import { useSmsProvider } from "../../context/SmsProviderContext";
+import { apiConfig } from "../../settings";
 
 const SMSLogsGrid = () => {
+  const { refreshKey } = useRefresh();
   const { provider } = useSmsProvider();
-  const today = new Date().toISOString().split("T")[0];
+
   const [logs, setLogs] = useState([]);
-  const [endDate] = useState(today); // Always today's date
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
   const [loading, setLoading] = useState(false);
 
+  const itemsPerPage = 10;
+
   const fetchLogs = async () => {
-    setLoading(true);
     try {
       const isKizuna = provider === "kizuna-sms";
       const apiKeyToUse = isKizuna ? apiConfig.newApiKey : apiConfig.apiKey;
       const clientIdToUse = isKizuna ? apiConfig.newClientId : apiConfig.clientId;
 
+      const today = new Date();
+      const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
       const response = await axios.get(
-        `https://app.brandtxt.io/api/v2/GetSMS?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}&start=0&length=100&fromdate=${endDate}&enddate=${endDate}`
+        `https://app.brandtxt.io/api/v2/GetSMS?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}&start=0&length=100&fromdate=${formattedToday}&enddate=${formattedToday}`
       );
+
       setLogs(response.data.Data || []);
-      toast.success(`SMS logs refreshed (${isKizuna ? "KizunaSMS" : "Default"} provider).`);
+      toast.success(`✅ Logs refreshed (${isKizuna ? "KizunaSMS" : "Default"})`, {
+        position: 'top-center',
+      });
     } catch (error) {
       console.error("Error fetching logs:", error);
-      toast.error("Failed to refresh logs.");
-    } finally {
-      setLoading(false);
+      toast.error("❌ Failed to refresh logs.", {
+        position: 'top-center',
+      });
     }
   };
 
   useEffect(() => {
-    const refreshLogs = async () => {
-      if (provider) {
-        setLogs([]); // clear old logs first
-        toast.loading(`Fetching logs for ${provider === "kizuna-sms" ? "KizunaSMS" : "Default"}...`);
-        await fetchLogs();
-        toast.dismiss();
-      }
+    const loadLogs = async () => {
+      setLoading(true);
+      setLogs([]); // Clear previous logs immediately
+      await fetchLogs();
+      setLoading(false);
     };
 
-    refreshLogs();
-  }, [provider]); // 🚀 Only listen to provider change
+    if (provider) {
+      loadLogs();
+    }
+  }, [provider, refreshKey]); // ✅ Refresh on provider or manual trigger
 
-  const filteredLogs = logs.filter((log) =>
+  const filteredLogs = logs.filter(log =>
     log.MobileNumber.includes(search) || log.Status.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -71,21 +77,14 @@ const SMSLogsGrid = () => {
     <div className="p-4 bg-white shadow rounded-md">
       <h2 className="text-lg font-semibold mb-4">📋 SMS Delivery Logs</h2>
 
-      {/* Button bar */}
+      {/* Action Buttons */}
       <div className="flex flex-wrap gap-4 mb-4">
         <button
           onClick={fetchLogs}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
           disabled={loading}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? (
-            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
-            </svg>
-          ) : (
-            <>🔄 Refresh</>
-          )}
+          {loading ? "🔄 Loading..." : "🔄 Refresh"}
         </button>
 
         <input
@@ -109,7 +108,15 @@ const SMSLogsGrid = () => {
 
       {/* Table */}
       {loading ? (
-        <div className="text-center py-8 text-blue-600 font-semibold">🔄 Loading logs...</div>
+        <div className="text-center py-8 text-blue-600 font-semibold">
+          <span className="flex items-center justify-center">
+            <svg className="animate-spin h-6 w-6 mr-2 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
+            </svg>
+            Loading Logs...
+          </span>
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left border">
@@ -146,27 +153,27 @@ const SMSLogsGrid = () => {
       )}
 
       {/* Pagination */}
-      <div className="mt-4 flex justify-between items-center">
-        <span className="text-sm">
-          Page {currentPage} of {totalPages}
-        </span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Prev
-          </button>
-          <button
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Next
-          </button>
+      {filteredLogs.length > 0 && (
+        <div className="mt-4 flex justify-between items-center">
+          <span className="text-sm">Page {currentPage} of {totalPages}</span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

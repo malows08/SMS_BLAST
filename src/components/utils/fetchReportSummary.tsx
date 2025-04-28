@@ -1,5 +1,4 @@
-import { apiConfig } from "../../settings"; // Importing the centralized API config
-import { useSmsProvider } from "../../context/SmsProviderContext";
+import { apiConfig } from "../../settings";
 
 export const fetchReportSummary = async (startDate: string, endDate: string, provider: string) => {
   const isKizuna = provider === "kizuna-sms";
@@ -11,8 +10,7 @@ export const fetchReportSummary = async (startDate: string, endDate: string, pro
 
   const response = await fetch(url);
   const result = await response.json();
-  console.log(result)
+  console.log("Fetched Report Summary: ", result);
 
-
-  return result.Data || []; //return the actual array
+  return result.Data || [];
 };

@@ -189,7 +189,8 @@ export default function ComposeSMS() {
         };
 
       const result = await sendToBrandtxt(payload, isBulk);
-
+      console.log(payload)
+      console.log(result)
       if (result?.ErrorCode === 0 && Array.isArray(result.Data)) {
         setSentMessages((prev) => [...prev, ...result.Data]);
         setSendingProgress((prev) => ({
@@ -208,7 +209,16 @@ export default function ComposeSMS() {
     }
 
     setIsSending(false);
+    toast.success(`✅ SMS Sending Complete!
+      Sent: ${sendingProgress.sent}
+      Failed: ${sendingProgress.failed}`,{
+        position: 'top-center',
+      });
     refresh();
+
+    // setTimeout(() => {
+    //   window.location.reload(); // ✅ reloads full app, including CreditsPage
+    // }, 800);
   };
 
   const handleContactsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -369,7 +379,6 @@ export default function ComposeSMS() {
           )}
         </Button>
       </div>
-
       <SMSLogsGrid /> {/* ✅ SMS Logs auto reload based on provider */}
     </div>
   );

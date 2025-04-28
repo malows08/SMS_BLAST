@@ -4,7 +4,7 @@ import SMSLogsGrid from "../../components/grid/SMSLogsGrid"; // Import grid for 
 import { Loader2 } from "lucide-react"; // Loader component for indicating loading state
 import * as XLSX from "xlsx";
 import { apiConfig } from "../../settings"; // Importing the centralized API config
-import { useRefresh } from "../../context/RefreshContext.tsx";// Import the context
+import { useRefresh } from "../../context/RefreshContext";
 import { useSmsProvider } from "../../context/SmsProviderContext";
 import { useSenderId } from "../../context/SenderIdContext";
 import toast from "react-hot-toast";
@@ -29,7 +29,6 @@ export default function KizunaSMS() {
     sent: 0,
     failed: 0,
   });
-  const [refreshLogs, setRefreshLogs] = useState(false);
   const maxLength = 1500;
   const { setProvider } = useSmsProvider();
 
@@ -82,10 +81,6 @@ export default function KizunaSMS() {
     };
 
     fetchGroupId();
-    // return () => {
-    //   setProvider("default");
-    //   setKeys(apiConfig.encodedApiKey, apiConfig.clientId);
-    // };
   }, [setProvider, setKeys]);
 
   // Helper function to chunk the array of numbers
@@ -224,7 +219,7 @@ export default function KizunaSMS() {
       }
       console.log(payload)
       const result = await sendToBrandtxt(payload, isBulk);
-      //console.log(result)
+      console.log(result)
       if (result && result.ErrorCode === 0 && Array.isArray(result.Data)) {
         setSentMessages((prev) => [...prev, ...result.Data]);
         setSendingProgress((prev) => ({
@@ -257,8 +252,12 @@ export default function KizunaSMS() {
     }
 
     setIsSending(false);
-    refresh(); // Trigger refresh of CreditsPage after sending SMS
-    setRefreshLogs((prev) => !prev); // 🔁 reload SMSLogsGrid
+    toast.success(`✅ SMS Sending Complete!
+      Sent: ${sendingProgress.sent}
+      Failed: ${sendingProgress.failed}`,{
+        position: 'top-center',
+      });
+    refresh();
   };
 
   // Format campaign name with current date and time
