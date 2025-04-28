@@ -10,6 +10,7 @@ const CreditsPage: React.FC = () => {
   const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showTopUpModal, setShowTopUpModal] = useState(false);
 
   const fetchCredits = async () => {
     setLoading(true);
@@ -22,30 +23,20 @@ const CreditsPage: React.FC = () => {
       const response = await fetch(
         `https://app.brandtxt.io/api/v2/Balance?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}`
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch credits");
-      }
+      if (!response.ok) throw new Error("Failed to fetch credits");
 
       const data = await response.json();
       setCredits(data.Data[0]?.Credits ?? 0);
-      console.log("Fetched credits for", provider, ":", data.Data[0]?.Credits);
     } catch (error: any) {
       console.error(error);
       setError(error.message);
     } finally {
-      // 🕒 Ensure loading spinner stays visible for at least 300ms
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setTimeout(() => setLoading(false), 300);
     }
   };
 
-  // 🟰 Fetch credits whenever provider is ready
   useEffect(() => {
-    if (provider) {
-      console.log("Provider is now:", provider);
-      fetchCredits(); // Fetch credits ONLY after provider is correct
-    }
+    if (provider) fetchCredits();
   }, [provider, refreshKey]);
 
   return (
@@ -57,7 +48,7 @@ const CreditsPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-lg text-gray-600"
+            className="text-lg text-gray-600 dark:text-gray-300"
           >
             🔄 Loading credits...
           </motion.div>
@@ -67,7 +58,7 @@ const CreditsPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-red-600"
+            className="text-red-600 dark:text-red-400"
           >
             ⚠️ Error: {error}
           </motion.div>
@@ -78,14 +69,64 @@ const CreditsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
-            className="text-lg dark:text-white"
+            className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"
           >
-            🎯 Your current credits: <strong>{credits}</strong>
-
-            {/* Small badge */}
-            <div className="mt-2 text-sm text-gray-500">
-              Active Provider: {provider === "kizuna-sms" ? "🔵 KizunaSMS" : "🟢 Default"}
+            <div>
+              <h2 className="text-lg font-bold dark:text-white">
+                🎯 Credits: <span className="text-blue-600 dark:text-blue-400">{credits}</span>
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Provider: {provider === "kizuna-sms" ? "🔵 KizunaSMS" : "🟢 Default"}
+              </p>
             </div>
+
+            <button
+              onClick={() => setShowTopUpModal(true)}
+              className="bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold py-2 px-5 rounded-full shadow-md transition-all"
+            >
+              ➕ Top Up
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Top Up Modal */}
+      <AnimatePresence>
+        {showTopUpModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.7 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.7 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-2xl w-full max-w-md relative"
+            >
+              <h3 className="text-xl font-semibold mb-4 dark:text-white">💳 Top Up Credits</h3>
+              <p className="mb-6 text-gray-600 dark:text-gray-400">
+                This is a dummy payment form for demo purposes.
+              </p>
+
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => { alert('✅ Payment via GCash successful!'); setShowTopUpModal(false); }}
+                  className="bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium"
+                >
+                  Pay with GCash
+                </button>
+
+                <button
+                  onClick={() => setShowTopUpModal(false)}
+                  className="text-gray-500 dark:text-gray-400 underline text-sm hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
