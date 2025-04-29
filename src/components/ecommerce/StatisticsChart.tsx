@@ -15,11 +15,23 @@ const COLORS = {
 };
 
 const StatisticsChart = () => {
+  const [labelColor, setLabelColor] = useState("black");
   const { provider } = useSmsProvider();
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    //for color label
+    const updateColor = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      setLabelColor(isDark ? "white" : "black");
+    };
+
+    updateColor(); // Check immediately
+    window.addEventListener("classChange", updateColor); // optional if you have custom event
+    const observer = new MutationObserver(updateColor);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -59,7 +71,7 @@ const StatisticsChart = () => {
     };
   
     fetchData(); // ✅ Always call inside useEffect
-  
+    return () => observer.disconnect();
   }, [provider]); // ✅ Depend on provider only
 
   const totalSent = chartData.reduce((sum, c) => sum + c.TOTALCOUNT, 0);
@@ -73,7 +85,7 @@ const StatisticsChart = () => {
 
   return (
     <div className="p-4 bg-white dark:bg-gray-800 shadow rounded">
-      <h2 className="text-lg font-semibold mb-2">📈 Traffic Summary (last 3 days)</h2>
+      <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">📈 Traffic Summary (last 3 days)</h2>
 
       {loading ? (
         <div className="flex justify-center items-center h-[300px]">
@@ -106,7 +118,7 @@ const StatisticsChart = () => {
                   value: "Message Count",
                   angle: -90,
                   position: "insideLeft",
-                  style: { textAnchor: "middle", fill: "black" },
+                  style: { textAnchor: "middle", fill: labelColor},
                 }}
               />
               <Tooltip formatter={(value: any) => value.toLocaleString()} />
