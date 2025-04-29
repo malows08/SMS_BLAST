@@ -40,8 +40,8 @@ export function SenderIdProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch(url);
         const data = await res.json();
-        console.log(res)
-        console.log(data)
+        //console.log(res)
+        //console.log(data)
         const id = data.Data[0]?.SenderId || "Unknown";
         setSenderId(id);
       } catch {

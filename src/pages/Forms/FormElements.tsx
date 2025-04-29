@@ -189,8 +189,8 @@ export default function ComposeSMS() {
         };
 
       const result = await sendToBrandtxt(payload, isBulk);
-      console.log(payload)
-      console.log(result)
+      //console.log(payload)
+      //console.log(result)
       if (result?.ErrorCode === 0 && Array.isArray(result.Data)) {
         setSentMessages((prev) => [...prev, ...result.Data]);
         setSendingProgress((prev) => ({

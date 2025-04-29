@@ -14,8 +14,9 @@ export default function EcommerceMetrics() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const today = new Date().toISOString().split("T")[0];
-    const [endDate] = useState(today);
+    const today = new Date();
+    const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const [endDate] = useState(formattedToday);
     const { provider } = useSmsProvider(); //provider switching
 
     useEffect(() => {
@@ -26,13 +27,13 @@ export default function EcommerceMetrics() {
                 const isKizuna = provider === "kizuna-sms";
                 const apiKeyToUse = isKizuna ? apiConfig.newApiKey : apiConfig.apiKey;
                 const clientIdToUse = isKizuna ? apiConfig.newClientId : apiConfig.clientId;
-        
+
                 const response = await axios.get(
                     `https://app.brandtxt.io/api/v2/ReportSummary?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}&start=0&length=100&fromdate=${endDate}&enddate=${endDate}`
                 );
-        
+
                 const data = response.data;
-        
+                console.log(data)
                 setStats({
                     totalSent: data.Data[0]?.TOTALCOUNT ?? 0,
                     totalDelivered: data.Data[0]?.DELIVRD ?? 0,
@@ -47,7 +48,7 @@ export default function EcommerceMetrics() {
             }
         };
 
-        if(provider){
+        if (provider) {
             fetchSMSStats();
         }
     }, [provider]);

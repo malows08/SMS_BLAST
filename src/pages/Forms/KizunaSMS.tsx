@@ -47,10 +47,10 @@ export default function KizunaSMS() {
         //const response = await fetch("https://app.brandtxt.io/api/v2/SenderId?ApiKey=Qu%2Ba14KExO3viOV21Ar6qbal9s6kq2zGTGqeOZ96DO0%3D&ClientId=6005b6a1-5446-483a-83d0-b841d2e44b9a");
         const response = await fetch(`https://app.brandtxt.io/api/v2/SenderId?ApiKey=${apiKeyToUse}&ClientId=${apiConfig.newClientId}`);
         const data = await response.json();
-        console.log(data)
+       // console.log(data)
         if (data && Array.isArray(data.Data)) {
           const ids = data.Data.map((item: any) => item.SenderId);
-          console.log(ids)
+          //console.log(ids)
           setSenderIds(ids);
           if (ids.length > 0) {
             setSelectedSenderId(ids[0]);
@@ -72,7 +72,7 @@ export default function KizunaSMS() {
         const data = await response.json();
         if (data && Array.isArray(data.Data) && data.Data.length > 0) {
           const firstGroupId = data.Data[0].GroupId;
-          console.log(firstGroupId)
+          //console.log(firstGroupId)
           localStorage.setItem("groupId", firstGroupId);
         }
       } catch (error) {
@@ -217,9 +217,9 @@ export default function KizunaSMS() {
           clientId: apiConfig.newClientId,  // Using the centralized Client ID
         };
       }
-      console.log(payload)
+      //console.log(payload)
       const result = await sendToBrandtxt(payload, isBulk);
-      console.log(result)
+      //console.log(result)
       if (result && result.ErrorCode === 0 && Array.isArray(result.Data)) {
         setSentMessages((prev) => [...prev, ...result.Data]);
         setSendingProgress((prev) => ({

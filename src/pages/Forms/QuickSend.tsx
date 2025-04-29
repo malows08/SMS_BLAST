@@ -27,7 +27,7 @@ const QuickSend = () => {
         if (!res.ok) throw new Error("Unauthorized");
   
         const data = await res.json();
-        console.log(data?.data?.uid)
+        //console.log(data?.data?.uid)
         setAvailableSenderId(data?.data?.uid || null);
         setSenderId(data?.data?.uid || '');
       } catch (err) {
