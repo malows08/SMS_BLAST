@@ -5,7 +5,7 @@ import { useSmsProvider } from "../../context/SmsProviderContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const CreditsPage: React.FC = () => {
-  const { refreshKey } = useRefresh();
+  const { refreshKey, refresh } = useRefresh();
   const { provider } = useSmsProvider();
   const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -37,7 +37,14 @@ const CreditsPage: React.FC = () => {
 
   useEffect(() => {
     if (provider) fetchCredits();
-  }, [provider, refreshKey]);
+  }, [provider, refreshKey]); // ✅ This is fine now
+
+  // ✅ Call refresh() only after payment (or after manual Top Up)
+  const handleTopUp = () => {
+    alert('✅ Payment via GCash successful!');
+    setShowTopUpModal(false);
+    refresh(); // ✅ Trigger refresh ONLY here, after user Top-Up
+  };
 
   return (
     <div className="p-4">
@@ -113,7 +120,7 @@ const CreditsPage: React.FC = () => {
 
               <div className="flex flex-col gap-4">
                 <button
-                  onClick={() => { alert('✅ Payment via GCash successful!'); setShowTopUpModal(false); }}
+                  onClick={handleTopUp} // ✅ Correct place to trigger refresh
                   className="bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium"
                 >
                   Pay with GCash

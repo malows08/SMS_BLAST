@@ -33,7 +33,7 @@ export default function EcommerceMetrics() {
                 );
 
                 const data = response.data;
-                console.log(data)
+                //console.log(data)
                 setStats({
                     totalSent: data.Data[0]?.TOTALCOUNT ?? 0,
                     totalDelivered: data.Data[0]?.DELIVRD ?? 0,
