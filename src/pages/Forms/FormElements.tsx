@@ -133,8 +133,8 @@ export default function ComposeSMS() {
 
     const sendToBrandtxt = async (payload, isBulk = false) => {
       const url = isBulk
-        ? "http://localhost:5000/proxy/send-bulk-sms"
-        : "http://localhost:5000/proxy/send-sms";
+        ? "/api/send-bulk-sms"
+        : "/api/send-sms";
 
       try {
         const res = await fetch(url, {

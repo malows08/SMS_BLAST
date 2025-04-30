@@ -155,8 +155,8 @@ export default function KizunaSMS() {
 
     const sendToBrandtxt = async (payload, isBulk = false) => {
       const url = isBulk
-        ? "http://localhost:5000/proxy/send-bulk-sms"
-        : "http://localhost:5000/proxy/send-sms";
+        ? "/api/send-bulk-sms"
+        : "/api/send-sms";
 
       try {
         const response = await fetch(url, {
