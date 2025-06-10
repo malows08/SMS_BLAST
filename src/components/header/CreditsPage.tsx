@@ -3,6 +3,8 @@ import { apiConfig } from "../../settings";
 import { useRefresh } from "../../context/RefreshContext";
 import { useSmsProvider } from "../../context/SmsProviderContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { jwtDecode } from "jwt-decode";
+
 
 const CreditsPage: React.FC = () => {
   const { refreshKey, refresh } = useRefresh();
@@ -12,32 +14,75 @@ const CreditsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showTopUpModal, setShowTopUpModal] = useState(false);
 
+  const [fname, setFname] = useState<string | null>(null);
+  const [userCredit, setUserCredit] = useState<number>(0);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      setFname(decoded.fname); // Extract fname from JWT
+      //setUserCredit(decoded.credit ?? 0);// Extract credit from JWT
+    }
+    fetchCredits();
+  }, []);
+
   const fetchCredits = async () => {
     setLoading(true);
     setError(null);
 
-    const apiKeyToUse = provider === "kizuna-sms" ? apiConfig.newEncodedApiKey : apiConfig.encodedApiKey;
-    const clientIdToUse = provider === "kizuna-sms" ? apiConfig.newClientId : apiConfig.clientId;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("No token found");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const response = await fetch(
-        `https://app.brandtxt.io/api/v2/Balance?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}`
-      );
+      const response = await fetch("http://localhost:4000/api/credits", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (!response.ok) throw new Error("Failed to fetch credits");
 
       const data = await response.json();
-      setCredits(data.Data[0]?.Credits ?? 0);
+      setUserCredit(data.credit); // 👈 Update the state with fetched credit
     } catch (error: any) {
       console.error(error);
       setError(error.message);
     } finally {
-      setTimeout(() => setLoading(false), 300);
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (provider) fetchCredits();
-  }, [provider, refreshKey]); // ✅ This is fine now
+  // const fetchCredits = async () => {
+  //   setLoading(true);
+  //   setError(null);
+
+  //   const apiKeyToUse = provider === "kizuna-sms" ? apiConfig.newEncodedApiKey : apiConfig.encodedApiKey;
+  //   const clientIdToUse = provider === "kizuna-sms" ? apiConfig.newClientId : apiConfig.clientId;
+
+  //   try {
+  //     const response = await fetch(
+  //       `https://app.brandtxt.io/api/v2/Balance?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}`
+  //     );
+  //     if (!response.ok) throw new Error("Failed to fetch credits");
+
+  //     const data = await response.json();
+  //     setCredits(data.Data[0]?.Credits ?? 0);
+  //   } catch (error: any) {
+  //     console.error(error);
+  //     setError(error.message);
+  //   } finally {
+  //     setTimeout(() => setLoading(false), 300);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   if (provider) fetchCredits();
+  // }, [provider, refreshKey]);
 
   // ✅ Call refresh() only after payment (or after manual Top Up)
   const handleTopUp = () => {
@@ -71,20 +116,28 @@ const CreditsPage: React.FC = () => {
           </motion.div>
         ) : (
           <motion.div
-            key="credits"
+            key="credit"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
-            className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"
+            className="flex items-center justify-between gap-8 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"
           >
             <div>
               <h2 className="text-lg font-bold dark:text-white">
-                🎯 Credits: <span className="text-blue-600 dark:text-blue-400">{credits}</span>
+                💰 Account Credit:
+                <span className="text-blue-600 dark:text-blue-400">
+                  {userCredit}
+                </span>
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Provider: {provider === "kizuna-sms" ? "🔵 KizunaSMS" : "🟢 Default"}
-              </p>
+              {/* {fname && (
+                <h2 className="text-lg font-bold dark:text-white">
+                  👋 Welcome, <span className="font-bold">{fname}</span>!
+                </h2>
+              )} */}
+              {/* <p className="text-sm text-gray-500 dark:text-gray-400">
+                💰 Your Account Credit: <span className="font-semibold">{userCredit}</span>
+              </p> */}
             </div>
 
             <button

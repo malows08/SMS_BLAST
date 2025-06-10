@@ -3,16 +3,16 @@ import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
 import BasicTableOne from "../../components/tables/BasicTables/BasicTableOne";
 
-export default function BasicTables() {
+export default function RoleTables() {
   return (
     <>
       <PageMeta
         title="SMS 2.0"
         description="This is SMS Basic Tables Dashboard page for Kizuna - SMS Tailwind CSS Admin Dashboard Template"
       />
-      <PageBreadcrumb pageTitle="Basic Tables" />
+      <PageBreadcrumb pageTitle="User Roles" />
       <div className="space-y-6">
-        <ComponentCard title="Basic Table 1">
+        <ComponentCard title="Role Assignment">
           <BasicTableOne />
         </ComponentCard>
       </div>

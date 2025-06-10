@@ -10,7 +10,7 @@ interface SmsProviderContextType {
 const SmsProviderContext = createContext<SmsProviderContextType | undefined>(undefined);
 
 export function SmsProvider({ children }: { children: ReactNode }) {
-  const [provider, setProvider] = useState<ProviderType>("default");
+  const [provider, setProvider] = useState<ProviderType>("kizuna-sms");
 
   return (
     <SmsProviderContext.Provider value={{ provider, setProvider }}>

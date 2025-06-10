@@ -43,7 +43,7 @@ export default function App() {
                 <Route path="form-elements" element={<FormElements />} />
                 <Route path="kizuna-sms" element={<KizunaSMS />} />
                 <Route path="quick-send" element={<QuickSend />} />
-                <Route path="basic-tables" element={<BasicTables />} />
+                <Route path="role-tables" element={<BasicTables />} />
                 <Route path="alerts" element={<Alerts />} />
                 <Route path="avatars" element={<Avatars />} />
                 <Route path="badge" element={<Badges />} />

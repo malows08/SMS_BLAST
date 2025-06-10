@@ -47,7 +47,7 @@ export default function KizunaSMS() {
         //const response = await fetch("https://app.brandtxt.io/api/v2/SenderId?ApiKey=Qu%2Ba14KExO3viOV21Ar6qbal9s6kq2zGTGqeOZ96DO0%3D&ClientId=6005b6a1-5446-483a-83d0-b841d2e44b9a");
         const response = await fetch(`https://app.brandtxt.io/api/v2/SenderId?ApiKey=${apiKeyToUse}&ClientId=${apiConfig.newClientId}`);
         const data = await response.json();
-       // console.log(data)
+        // console.log(data)
         if (data && Array.isArray(data.Data)) {
           const ids = data.Data.map((item: any) => item.SenderId);
           //console.log(ids)
@@ -254,9 +254,9 @@ export default function KizunaSMS() {
     setIsSending(false);
     toast.success(`✅ SMS Sending Complete!
       Sent: ${sendingProgress.sent}
-      Failed: ${sendingProgress.failed}`,{
-        position: 'top-center',
-      });
+      Failed: ${sendingProgress.failed}`, {
+      position: 'top-center',
+    });
     refresh();
   };
 
@@ -280,32 +280,54 @@ export default function KizunaSMS() {
     setContacts(formatted);
   };
 
-  // Handler to parse Excel or CSV and extract mobile numbers
+  // Handler to parse Excel, CSV and .txt extract mobile numbers
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
+    const fileType = file.name.split(".").pop()?.toLowerCase();
 
     reader.onload = (event) => {
-      const data = new Uint8Array(event.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const rawData = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 });
+      const result = event.target?.result;
+      if (!result) return;
 
-      // Flatten data, extract only valid phone numbers
-      const numbers = rawData
-        .flat()
-        .map((val) => String(val).replace(/[^\d]/g, ""))
+      let rawNumbers: string[] = [];
+
+      if (fileType === "txt") {
+        const text = result as string;
+        rawNumbers = text
+          .split(/[\r\n,; ]+/) // split by newline, comma, semicolon, or space
+          .map((val) => val.trim());
+      } else if (fileType === "csv" || fileType === "xlsx" || fileType === "xls") {
+        const data = new Uint8Array(result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rawData = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 });
+
+        rawNumbers = rawData.flat().map((val) => String(val));
+      } else {
+        alert("Unsupported file type");
+        return;
+      }
+
+      // Clean and validate numbers
+      const numbers = rawNumbers
+        .map((val) => val.replace(/[^\d]/g, ""))
         .filter((num) => num.length === 11 || (num.startsWith("63") && num.length === 12));
 
       const formatted = numbers.join(",");
       setContacts((prev) => (prev ? prev + "," + formatted : formatted));
     };
 
-    reader.readAsArrayBuffer(file);
+    if (fileType === "txt") {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
   };
+
 
   return (
     // <div className="container">
@@ -351,7 +373,7 @@ export default function KizunaSMS() {
           <p className="text-red-500 text-sm mt-1">{contactsError}</p>
         )}
         <div className="my-4">
-          <Label>Upload Contacts (.csv or .xlsx)</Label>
+          <Label>Upload Contacts (.csv,.xlsx & .txt)</Label>
           <Input type="file" accept=".csv, .xlsx" onChange={handleFileUpload} />
           <p className="text-sm text-gray-500 mt-1">The file should contain mobile numbers in a single column.</p>
         </div>
