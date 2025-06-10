@@ -31,8 +31,8 @@ export default function BasicTableOne() {
         return;
       }
 
-      try {
-        const res = await fetch("http://localhost:4000/api/users", {
+      try {//https://sms-blast-backend.onrender.com for local http://localhost:4000/api/users
+        const res = await fetch("https://sms-blast-backend.onrender.com/api/users", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -60,16 +60,28 @@ export default function BasicTableOne() {
           {/* Table Header */}
           <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
             <TableRow>
-              <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
                 ID
               </TableCell>
-              <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
                 Email
               </TableCell>
-              <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
                 Role
               </TableCell>
-              <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
                 Actions
               </TableCell>
             </TableRow>
