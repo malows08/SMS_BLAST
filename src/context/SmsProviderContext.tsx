@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
-type ProviderType = "default" | "kizuna-sms";
+type ProviderType = "kizuna-sms" | "default";
 
 interface SmsProviderContextType {
   provider: ProviderType;

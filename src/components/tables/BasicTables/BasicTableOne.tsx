@@ -8,6 +8,7 @@ import {
 import { Pencil, Trash2 } from "lucide-react";
 import Badge from "../../ui/badge/Badge";
 import { useEffect, useState } from "react";
+import { Dialog } from "@headlessui/react";
 
 interface User {
   id: number;
@@ -17,11 +18,28 @@ interface User {
   role: {
     name: string;
   } | null;
+  provider: {
+    name: string;
+  } | null;
+  status: {
+    name: string;
+  } | null;
 }
-
 
 export default function BasicTableOne() {
   const [users, setUsers] = useState<User[]>([]);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const openEditDialog = (user: User) => {
+    setSelectedUser(user);
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setSelectedUser(null);
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -31,8 +49,8 @@ export default function BasicTableOne() {
         return;
       }
 
-      try {//https://sms-blast-backend.onrender.com for local http://localhost:4000/api/users
-        const res = await fetch("https://sms-blast-backend.onrender.com/api/users", {
+      try {
+        const res = await fetch("http://localhost:4000/api/users", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -54,78 +72,122 @@ export default function BasicTableOne() {
   }, []);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      <div className="max-w-full overflow-x-auto">
-        <Table>
-          {/* Table Header */}
-          <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-            <TableRow>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                ID
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Email
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Role
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Actions
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-
-          {/* Table Body */}
-          <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="px-5 py-4 sm:px-6 text-start text-theme-sm text-gray-800 dark:text-white/90">
-                  {user.id}
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {user.email}
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <Badge
-                    size="sm"
-                    color={
-                      user.role?.name === "Admin"
-                        ? "success"
-                        : user.role?.name === "User"
-                          ? "warning"
-                          : "error"
-                    }
-                  >
-                    {user.role?.name || "Unknown"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  <div className="flex gap-4 items-center">
-                    <button className="text-blue-600 hover:text-blue-800" title="Edit">
-                      <Pencil size={18} />
-                    </button>
-                    <button className="text-red-600 hover:text-red-800" title="Delete">
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </TableCell>
+    <div className="p-6 bg-gray-50 rounded-xl shadow-sm">
+      <h2 className="text-lg font-semibold mb-4 text-gray-800">User Roles</h2>
+      <div className="rounded-lg overflow-hidden border border-gray-200">
+        <div className="bg-white px-6 py-4 text-sm text-gray-600 font-medium border-b">
+          Role Assignment
+        </div>
+        <div className="overflow-x-auto">
+          <Table className="w-full text-sm text-left text-gray-700">
+            <TableHeader className="bg-white text-xs text-gray-500 uppercase border-b">
+              <TableRow>
+                <TableCell className="px-4 py-3">ID</TableCell>
+                <TableCell className="px-4 py-3">Email</TableCell>
+                <TableCell className="px-4 py-3">Role</TableCell>
+                <TableCell className="px-4 py-3">Provider</TableCell>
+                <TableCell className="px-4 py-3">Status</TableCell>
+                <TableCell className="px-4 py-3">Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+
+            <TableBody className="bg-white divide-y">
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="px-4 py-3">{user.id}</TableCell>
+                  <TableCell className="px-4 py-3">{user.email}</TableCell>
+                  <TableCell className="px-4 py-3">
+                    <Badge
+                      size="sm"
+                      color="destructive"
+                      className="bg-red-100 text-red-500 lowercase"
+                    >
+                      {user.role?.name || "—"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
+                    {user.provider?.name || "—"}
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
+                    {user.status?.name || "—"}
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
+                    <div className="flex gap-3 items-center">
+                      <button
+                        className="text-blue-500 hover:text-blue-700"
+                        title="Edit"
+                        onClick={() => openEditDialog(user)}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        className="text-red-500 hover:text-red-700"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
+
+      {/* Dialog */}
+      <Dialog open={isDialogOpen} onClose={closeDialog} className="relative z-50">
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 space-y-4">
+            <Dialog.Title className="text-lg font-semibold">Edit User</Dialog.Title>
+            {selectedUser && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-600">Email</label>
+                  <input
+                    value={selectedUser.email}
+                    readOnly
+                    className="w-full mt-1 border rounded px-3 py-2 text-sm bg-gray-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600">Role</label>
+                  <input
+                    value={selectedUser.role?.name || ""}
+                    readOnly
+                    className="w-full mt-1 border rounded px-3 py-2 text-sm bg-gray-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600">Provider</label>
+                  <input
+                    value={selectedUser.provider?.name || ""}
+                    readOnly
+                    className="w-full mt-1 border rounded px-3 py-2 text-sm bg-gray-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600">Status</label>
+                  <input
+                    value={selectedUser.status?.name || ""}
+                    readOnly
+                    className="w-full mt-1 border rounded px-3 py-2 text-sm bg-gray-100"
+                  />
+                </div>
+                <div className="text-right">
+                  <button
+                    onClick={closeDialog}
+                    className="px-4 py-2 bg-gray-800 text-white rounded text-sm hover:bg-gray-700"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 }

@@ -4,7 +4,6 @@ import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import { useRefresh } from "../../context/RefreshContext";
 import { useSmsProvider } from "../../context/SmsProviderContext";
-import { apiConfig } from "../../settings";
 
 const SMSLogsGrid = () => {
   const { refreshKey } = useRefresh();
@@ -14,49 +13,46 @@ const SMSLogsGrid = () => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [successCount, setSuccessCount] = useState(0);
 
   const itemsPerPage = 10;
 
   const fetchLogs = async () => {
     try {
-      const isKizuna = provider === "kizuna-sms";
-      const apiKeyToUse = isKizuna ? apiConfig.newApiKey : apiConfig.apiKey;
-      const clientIdToUse = isKizuna ? apiConfig.newClientId : apiConfig.clientId;
+      setLoading(true);
+      let data = [];
 
-      const today = new Date();
-      const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      if (provider === "kizuna-sms") {
+        const response = await axios.get("http://localhost:4000/api/smslogs/get-db-sms-logs");
+        data = response.data;
+      } else {
+        const response = await axios.get(`http://localhost:4000/api/smslogs/get-sms-logs?provider=${provider}`);
+        data = response.data.Data || [];
+      }
 
-      const response = await axios.get(
-        `https://app.brandtxt.io/api/v2/GetSMS?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}&start=0&length=100&fromdate=${formattedToday}&enddate=${formattedToday}`
-      );
+      setLogs(data);
+      setPendingCount(data.filter((log: any) => log.sms_status === "pending").length);
+      setSuccessCount(data.filter((log: any) => log.sms_status === "success").length);
 
-      setLogs(response.data.Data || []);
-      toast.success(`✅ Logs refreshed (${isKizuna ? "KizunaSMS" : "Default"})`, {
-        position: 'top-center',
-      });
+      toast.success(`✅ Logs refreshed (${provider})`, { position: "top-center" });
     } catch (error) {
       console.error("Error fetching logs:", error);
-      toast.error("❌ Failed to refresh logs.", {
-        position: 'top-center',
-      });
+      toast.error("❌ Failed to refresh logs.", { position: "top-center" });
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const loadLogs = async () => {
-      setLoading(true);
-      setLogs([]); // Clear previous logs immediately
-      await fetchLogs();
-      setLoading(false);
-    };
-
     if (provider) {
-      loadLogs();
+      fetchLogs();
     }
-  }, [provider, refreshKey]); // ✅ Refresh on provider or manual trigger
+  }, [provider, refreshKey]);
 
-  const filteredLogs = logs.filter(log =>
-    log.MobileNumber.includes(search) || log.Status.toLowerCase().includes(search.toLowerCase())
+  const filteredLogs = logs.filter((log: any) =>
+    (log.mobilenumbers || "").includes(search) ||
+    (log.sms_status || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const paginatedLogs = filteredLogs.slice(
@@ -77,7 +73,6 @@ const SMSLogsGrid = () => {
     <div className="p-4 bg-white shadow rounded-md">
       <h2 className="text-lg font-semibold mb-4">📋 SMS Delivery Logs</h2>
 
-      {/* Action Buttons */}
       <div className="flex flex-wrap gap-4 mb-4">
         <button
           onClick={fetchLogs}
@@ -106,7 +101,6 @@ const SMSLogsGrid = () => {
         </button>
       </div>
 
-      {/* Table */}
       {loading ? (
         <div className="text-center py-8 text-blue-600 font-semibold">
           <span className="flex items-center justify-center">
@@ -119,32 +113,35 @@ const SMSLogsGrid = () => {
         </div>
       ) : (
         <div className="overflow-x-auto">
+          <div className="mb-4 text-sm text-gray-600 flex gap-6 items-center">
+            <span><span className="text-green-600 font-semibold">✅ Success:</span> {successCount}</span>
+            <span><span className="text-yellow-600 font-semibold">⏳ Pending:</span> {pendingCount}</span>
+          </div>
+
           <table className="min-w-full text-sm text-left border">
             <thead className="bg-gray-100 font-semibold">
               <tr>
                 <th className="p-2 border">Mobile Number</th>
-                <th className="p-2 border">Sender ID</th>
+                <th className="p-2 border">Provider</th>
                 <th className="p-2 border">Message</th>
                 <th className="p-2 border">Submit Date</th>
-                <th className="p-2 border">Done Date</th>
-                <th className="p-2 border">Message ID</th>
                 <th className="p-2 border">Status</th>
-                <th className="p-2 border">Error Code</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedLogs.map((log, index) => (
+              {paginatedLogs.map((log: any, index) => (
                 <tr key={index} className="border">
-                  <td className="p-2 border">{log.MobileNumber}</td>
-                  <td className="p-2 border">{log.SenderId}</td>
-                  <td className="p-2 border truncate max-w-[250px]">{log.Message}</td>
-                  <td className="p-2 border">{log.SubmitDate}</td>
-                  <td className="p-2 border">{log.DoneDate}</td>
-                  <td className="p-2 border">{log.MessageId}</td>
-                  <td className={`p-2 border font-bold ${log.Status === "DELIVRD" ? "text-green-600" : "text-red-600"}`}>
-                    {log.Status}
+                  <td className="p-2 border">{log.mobilenumbers}</td>
+                  <td className="p-2 border">{log.provider}</td>
+                  <td className="p-2 border truncate max-w-[250px]">{log.message}</td>
+                  <td className="p-2 border">{new Date(log.createdAt).toLocaleString()}</td>
+                  <td className="p-2 border">
+                    {log.sms_status === "success" ? (
+                      <span className="text-green-600 font-semibold">✅ Success</span>
+                    ) : (
+                      <span className="text-yellow-600 font-semibold">⏳ Pending</span>
+                    )}
                   </td>
-                  <td className="p-2 border">{log.ErrorCode}</td>
                 </tr>
               ))}
             </tbody>
@@ -152,7 +149,6 @@ const SMSLogsGrid = () => {
         </div>
       )}
 
-      {/* Pagination */}
       {filteredLogs.length > 0 && (
         <div className="mt-4 flex justify-between items-center">
           <span className="text-sm">Page {currentPage} of {totalPages}</span>

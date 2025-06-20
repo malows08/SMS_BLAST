@@ -30,7 +30,27 @@ export default function App() {
     <RefreshProvider> {/* ✅ Wrap everything inside RefreshProvider */}
       <SmsProvider>
         <SenderIdProvider>
-          <Toaster position="top-center" reverseOrder={false} /> {/* ✅ Moved to center */}
+          <Toaster
+            position="top-center"
+            containerStyle={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 9999,
+            }}
+            toastOptions={{
+              duration: 4000,
+              style: {
+                padding: "16px 24px",
+                fontWeight: "bold",
+                borderRadius: "8px",
+                background: "#fff",
+                color: "#000",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+              },
+            }}
+          />
           <Router>
             <ScrollToTop />
             <Routes>
