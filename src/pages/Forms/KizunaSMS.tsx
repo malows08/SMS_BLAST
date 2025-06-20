@@ -341,7 +341,7 @@ export default function KizunaSMS() {
                 </option>
               ))}
             </select>
-            {selectedProvider && (
+            {selectedProvider && false && (
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Sender ID</Label>
