@@ -56,8 +56,9 @@ export default function KizunaSMS() {
   useEffect(() => {
     const fetchProviders = async () => {
       setLoadingProviders(true);
-      try {
-        const res = await fetch("http://localhost:4000/api/sender-ids");
+      try {//for render https://sms-blast-backend.onrender.com/api
+        // const res = await fetch("http://localhost:4000/api/sender-ids");
+        const res = await fetch("https://sms-blast-backend.onrender.com/api/sender-ids");
         const data = await res.json();
         if (Array.isArray(data)) {
           setProviders(data);
@@ -218,12 +219,14 @@ export default function KizunaSMS() {
           data: smsPayload,
         };
 
-        try {
-          const response = await fetch("http://localhost:4000/api/sms-insert", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(fullPayload),
-          });
+        try { // for render https://sms-blast-backend.onrender.com/api
+          const response = await fetch("https://sms-blast-backend.onrender.com/api/sms-insert",
+            // const response = await fetch("http://localhost:4000/api/sms-insert", 
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(fullPayload),
+            });
 
           if (response.ok) {
             setSendingProgress((prev) => ({
@@ -244,15 +247,17 @@ export default function KizunaSMS() {
     toast.success(`✅ Sending complete! Total: ${allNumbers.length}`);
 
     // ✅ Deduct credits after successful send
-    try {
-      const response = await fetch("http://localhost:4000/api/credits_deduct", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: uid,
-          deductAmount: totalSmsCount,
-        }),
-      });
+    try { // for render https://sms-blast-backend.onrender.com/api
+      const response = await fetch("https://sms-blast-backend.onrender.com/api/credits_deduct",
+        // const response = await fetch("http://localhost:4000/api/credits_deduct",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: uid,
+            deductAmount: totalSmsCount,
+          }),
+        });
 
       if (response.ok) {
         toast.success("✅ Credits deducted");

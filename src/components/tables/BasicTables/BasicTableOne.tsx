@@ -49,12 +49,14 @@ export default function BasicTableOne() {
         return;
       }
 
-      try {
-        const res = await fetch("http://localhost:4000/api/users", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      try { //https://sms-blast-backend.onrender.com/api
+        // const res = await fetch("http://localhost:4000/api/users", 
+        const res = await fetch("https://sms-blast-backend.onrender.com/api/users",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
         if (!res.ok) {
           throw new Error("Failed to fetch users");

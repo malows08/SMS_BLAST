@@ -24,10 +24,13 @@ const SMSLogsGrid = () => {
       let data = [];
 
       if (provider === "kizuna-sms") {
-        const response = await axios.get("http://localhost:4000/api/smslogs/get-db-sms-logs");
+        //for render  https://sms-blast-backend.onrender.com/api/
+        const response = await axios.get("https://sms-blast-backend.onrender.com/api/smslogs/get-db-sms-logs");
+        //const response = await axios.get("http://localhost:4000/api/smslogs/get-db-sms-logs");
         data = response.data;
       } else {
-        const response = await axios.get(`http://localhost:4000/api/smslogs/get-sms-logs?provider=${provider}`);
+        const response = await axios.get(`https://sms-blast-backend.onrender.com/api/smslogs/get-sms-logs?provider=${provider}`);
+        //const response = await axios.get(`http://localhost:4000/api/smslogs/get-sms-logs?provider=${provider}`);
         data = response.data.Data || [];
       }
 

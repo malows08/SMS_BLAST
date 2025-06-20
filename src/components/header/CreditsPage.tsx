@@ -39,8 +39,8 @@ const CreditsPage: React.FC = () => {
     }
 
     try {//https://sms-blast-backend.onrender.com for local http://localhost:4000/api/credits
-      // const response = await fetch("https://sms-blast-backend.onrender.com/api/credits", 
-      const response = await fetch("http://localhost:4000/api/credits",
+      const response = await fetch("https://sms-blast-backend.onrender.com/api/credits",
+        //const response = await fetch("http://localhost:4000/api/credits",
         {
           headers: {
             Authorization: `Bearer ${token}`,

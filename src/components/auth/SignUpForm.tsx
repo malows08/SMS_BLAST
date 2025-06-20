@@ -23,8 +23,8 @@ export default function SignUpForm({ onLogin }) {
     };
 
     try { //https://sms-blast-backend.onrender.com for local http://localhost:4000/api/signup
-      // const res = await fetch("https://sms-blast-backend.onrender.com/api/signup", 
-      const res = await fetch("http://localhost:4000/api/signup",
+      const res = await fetch("https://sms-blast-backend.onrender.com/api/signup",
+        //const res = await fetch("http://localhost:4000/api/signup",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
