@@ -79,18 +79,20 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
             </svg>
           </button>
 
-          <Link to="/" className="lg:hidden">
-            <img
-              className="dark:hidden"
-              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTAiIGZpbGw9IiM2MzY2RjEiLz48cGF0aCBkPSJNMTQgMTdDMTQgMTUuODk1NCAxNC44OTU0IDE1IDE2IDE1SDMyQzMzLjEwNDUgMTUgMzQgMTUuODk1NCAzNCAxN1YyN0MzNCAyOC4xMDQ2IDMzLjEwNDUgMjkgMzIgMjlIMjRMMTggMzRWMjlIMTZDMTQuODk1NCAyOSAxNCAyOC4xMDQ2IDE0IDI3VjE3WiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtY2FwPSJy...IuNSIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjIyIiByPSIxLjUiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMjkiIGN5PSIyMiIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg=="
-              alt="SMS Logo"
-            />
-            <img
-              className="hidden dark:block"
-              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTAiIGZpbGw9IiM2MzY2RjEiLz48cGF0aCBkPSJNMTQgMTdDMTQgMTUuODk1NCAxNC44OTU0IDE1IDE2IDE1SDMyQzMzLjEwNDUgMTUgMzQgMTUuODk1NCAzNCAxN1YyN0MzNCAyOC4xMDQ2IDMzLjEwNDUgMjkgMzIgMjlIMjRMMTggMzRWMjlIMTZDMTQuODk1NCAyOSAxNCAyOC4xMDQ2IDE0IDI3VjE3WiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtY2FwPSJy...IuNSIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjIyIiByPSIxLjUiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMjkiIGN5PSIyMiIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg=="
-              alt="SMS Logo"
-            />
-          </Link>
+          {/* <div className="flex justify-center lg:justify-start items-center w-full px-4 py-2">
+            <Link to="/" className="block lg:hidden w-fit">
+              <img
+                className="dark:hidden h-8 w-auto"
+                src="data:image/svg+xml;base64,..." // light logo
+                alt="SMS Logo"
+              />
+              <img
+                className="hidden dark:block h-8 w-auto"
+                src="data:image/svg+xml;base64,..." // dark logo
+                alt="SMS Logo"
+              />
+            </Link>
+          </div> */}
 
           <button
             onClick={toggleApplicationMenu}
@@ -134,7 +136,7 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
                 </button>
                 <input
                   type="text"
-                  placeholder="Search or type command..."
+                  placeholder="Searchs or type command..."
                   className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                 />
 
@@ -147,11 +149,10 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
           </div>
         </div>
         <div
-          className={`${
-            isApplicationMenuOpen ? "flex" : "hidden"
-          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
+          className={`${isApplicationMenuOpen ? "flex" : "hidden"
+            } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
-          <div className="flex items-center gap-2 2xsm:gap-3">
+          <div className="flex items-center gap-2 2xsm:gap-3 ml-auto">
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}

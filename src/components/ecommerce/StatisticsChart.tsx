@@ -3,7 +3,6 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid
 } from "recharts";
 import { fetchReportSummary } from "../utils/fetchReportSummary";
-import { useSmsProvider } from "../../context/SmsProviderContext";
 import moment from "moment";
 
 const COLORS = {
@@ -16,41 +15,37 @@ const COLORS = {
 
 const StatisticsChart = () => {
   const [labelColor, setLabelColor] = useState("black");
-  const { provider } = useSmsProvider();
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    //for color label
     const updateColor = () => {
       const isDark = document.documentElement.classList.contains("dark");
       setLabelColor(isDark ? "white" : "black");
     };
 
-    updateColor(); // Check immediately
-    window.addEventListener("classChange", updateColor); // optional if you have custom event
+    updateColor();
+    window.addEventListener("classChange", updateColor);
     const observer = new MutationObserver(updateColor);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        if (!provider) return; // 🛑 Don't fetch if provider not ready
-  
         const today = moment();
         const threeDaysAgo = moment().subtract(2, "days");
-  
-        const rawData = await fetchReportSummary(provider); // ✅ use correct provider
-  
+
+        const rawData = await fetchReportSummary("kizuna-sms"); // ✅ Hardcoded
+
         const dateRange = [];
         for (let m = moment(threeDaysAgo); m.diff(today, "days") <= 0; m.add(1, "days")) {
           dateRange.push(moment(m));
         }
-  
+
         const grouped = dateRange.map(date => {
           const dateStr = date.format("DD-MMM-YYYY");
           const entry = rawData.find((item: any) => item.Date === dateStr) || {};
-  
+
           return {
             date: date.format("DD-MMM-YYYY"),
             DELIVRD: Number(entry.DELIVRD || 0),
@@ -61,7 +56,7 @@ const StatisticsChart = () => {
             TOTALCOUNT: Number(entry.TOTALCOUNT || 0),
           };
         });
-  
+
         setChartData(grouped);
       } catch (error) {
         console.error("Failed to fetch chart data:", error);
@@ -69,10 +64,10 @@ const StatisticsChart = () => {
         setLoading(false);
       }
     };
-  
-    fetchData(); // ✅ Always call inside useEffect
+
+    fetchData();
     return () => observer.disconnect();
-  }, [provider]); // ✅ Depend on provider only
+  }, []);
 
   const totalSent = chartData.reduce((sum, c) => sum + c.TOTALCOUNT, 0);
   const delivered = chartData.reduce((sum, c) => sum + c.DELIVRD, 0);
@@ -93,7 +88,6 @@ const StatisticsChart = () => {
         </div>
       ) : (
         <>
-          {/* Summary */}
           <div className="flex flex-wrap gap-4 mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">
             <span>Total Sent ({totalSent})</span>
             <span className="text-blue-500">Delivered {delivered} ({percent(delivered)}%)</span>
@@ -103,7 +97,6 @@ const StatisticsChart = () => {
             <span className="text-yellow-500">Others {others} ({percent(others)}%)</span>
           </div>
 
-          {/* Bar Chart */}
           <ResponsiveContainer width="100%" height={350}>
             <BarChart
               data={chartData}
@@ -118,7 +111,7 @@ const StatisticsChart = () => {
                   value: "Message Count",
                   angle: -90,
                   position: "insideLeft",
-                  style: { textAnchor: "middle", fill: labelColor},
+                  style: { textAnchor: "middle", fill: labelColor },
                 }}
               />
               <Tooltip formatter={(value: any) => value.toLocaleString()} />

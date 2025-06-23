@@ -5,7 +5,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 //import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
-import CreditsPage from "../components/header/CreditsPage"; 
+import CreditsPage from "../components/header/CreditsPage";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -84,18 +84,20 @@ const AppHeader: React.FC = () => {
             {/* Cross Icon */}
           </button>
 
-          <Link to="/" className="lg:hidden">
-            <img
-              className="dark:hidden"
-              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTAiIGZpbGw9IiM2MzY2RjEiLz48cGF0aCBkPSJNMTQgMTdDMTQgMTUuODk1NCAxNC44OTU0IDE1IDE2IDE1SDMyQzMzLjEwNDUgMTUgMzQgMTUuODk1NCAzNCAxN1YyN0MzNCAyOC4xMDQ2IDMzLjEwNDUgMjkgMzIgMjlIMjRMMTggMzRWMjlIMTZDMTQuODk1NCAyOSAxNCAyOC4xMDQ2IDE0IDI3VjE3WiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtY2FwPSJy...IuNSIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjIyIiByPSIxLjUiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMjkiIGN5PSIyMiIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg=="
-              alt="SMS Logo"
-            />
-            <img
-              className="hidden dark:block"
-              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTAiIGZpbGw9IiM2MzY2RjEiLz48cGF0aCBkPSJNMTQgMTdDMTQgMTUuODk1NCAxNC44OTU0IDE1IDE2IDE1SDMyQzMzLjEwNDUgMTUgMzQgMTUuODk1NCAzNCAxN1YyN0MzNCAyOC4xMDQ2IDMzLjEwNDUgMjkgMzIgMjlIMjRMMTggMzRWMjlIMTZDMTQuODk1NCAyOSAxNCAyOC4xMDQ2IDE0IDI3VjE3WiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtY2FwPSJy...IuNSIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjIyIiByPSIxLjUiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMjkiIGN5PSIyMiIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg=="
-              alt="SMS Logo"
-            />
-          </Link>
+          {/* <div className="flex items-center justify-between w-full px-4 py-2 lg:px-6">
+            <Link to="/" className="block w-auto h-auto">
+              <img
+                src="/logo-light.svg" // Or base64 string if preferred
+                alt="SMS Logo"
+                className="h-8 w-auto dark:hidden"
+              />
+              <img
+                src="/logo-dark.svg"
+                alt="SMS Logo Dark"
+                className="hidden h-8 w-auto dark:block"
+              />
+            </Link>
+          </div> */}
 
           <button
             onClick={toggleApplicationMenu}
@@ -119,7 +121,7 @@ const AppHeader: React.FC = () => {
 
           <div className="hidden lg:block">
             <form>
-              <div className="relative">
+              {/* <div className="relative">
                 <span className="absolute -translate-y-1/2 pointer-events-none left-4 top-1/2">
                   <svg
                     className="fill-gray-500 dark:fill-gray-400"
@@ -148,20 +150,19 @@ const AppHeader: React.FC = () => {
                   <span> ⌘ </span>
                   <span> K </span>
                 </button>
-              </div>
+              </div> */}
             </form>
           </div>
         </div>
         <div
-          className={`${
-            isApplicationMenuOpen ? "flex" : "hidden"
-          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
+          className={`${isApplicationMenuOpen ? "flex" : "hidden"
+            } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
-            
+
             <CreditsPage />
             {/* <!-- Notification Menu Area --> */}
           </div>

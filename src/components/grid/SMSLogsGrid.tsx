@@ -3,42 +3,52 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import { useRefresh } from "../../context/RefreshContext";
-import { useSmsProvider } from "../../context/SmsProviderContext";
+// import { useSmsProvider } from "../../context/SmsProviderContext";
+import useApiBaseUrl from "../../hooks/useApiBaseUrl";
+import { jwtDecode } from "jwt-decode";
+
+interface DecodedToken {
+  userId: string;
+  // Add other fields if needed
+}
 
 const SMSLogsGrid = () => {
   const { refreshKey } = useRefresh();
-  const { provider } = useSmsProvider();
-
   const [logs, setLogs] = useState([]);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [successCount, setSuccessCount] = useState(0);
+  const { apiBaseUrl } = useApiBaseUrl();
 
   const itemsPerPage = 10;
 
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      let data = [];
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
-      if (provider === "kizuna-sms") {
-        //for render  https://sms-blast-backend.onrender.com/api/
-        const response = await axios.get("https://sms-blast-backend.onrender.com/api/smslogs/get-db-sms-logs");
-        //const response = await axios.get("http://localhost:4000/api/smslogs/get-db-sms-logs");
-        data = response.data;
-      } else {
-        const response = await axios.get(`https://sms-blast-backend.onrender.com/api/smslogs/get-sms-logs?provider=${provider}`);
-        //const response = await axios.get(`http://localhost:4000/api/smslogs/get-sms-logs?provider=${provider}`);
-        data = response.data.Data || [];
-      }
+      const decoded = jwtDecode<{ id: string }>(token);
+      const userId = decoded.id;
+
+      const response = await axios.get(`${apiBaseUrl}/api/smslogs/get-db-sms-logs`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          userId, // Pass userId to backend
+        },
+      });
+
+      const data = response.data || [];
 
       setLogs(data);
       setPendingCount(data.filter((log: any) => log.sms_status === "pending").length);
       setSuccessCount(data.filter((log: any) => log.sms_status === "success").length);
 
-      toast.success(`✅ Logs refreshed (${provider})`, { position: "top-center" });
+      toast.success("✅ Logs refreshed (kizuna-sms)", { position: "top-center" });
     } catch (error) {
       console.error("Error fetching logs:", error);
       toast.error("❌ Failed to refresh logs.", { position: "top-center" });
@@ -48,10 +58,10 @@ const SMSLogsGrid = () => {
   };
 
   useEffect(() => {
-    if (provider) {
+    if (apiBaseUrl) {
       fetchLogs();
     }
-  }, [provider, refreshKey]);
+  }, [apiBaseUrl, refreshKey]);
 
   const filteredLogs = logs.filter((log: any) =>
     (log.mobilenumbers || "").includes(search) ||

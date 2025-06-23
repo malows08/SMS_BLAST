@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { apiConfig } from "../settings";
-import { useSmsProvider } from "../context/SmsProviderContext"; // ✅ Import your provider
+//import { useSmsProvider } from "../context/SmsProviderContext"; // ✅ Import your provider
 
 type SenderIdContextType = {
   senderId: string;
@@ -9,7 +9,7 @@ type SenderIdContextType = {
 
 const SenderIdContext = createContext<SenderIdContextType>({
   senderId: "Loading...",
-  setKeys: () => {},
+  setKeys: () => { },
 });
 
 export function SenderIdProvider({ children }: { children: ReactNode }) {

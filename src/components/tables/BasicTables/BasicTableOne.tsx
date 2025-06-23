@@ -9,6 +9,8 @@ import { Pencil, Trash2 } from "lucide-react";
 import Badge from "../../ui/badge/Badge";
 import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
+import useApiBaseUrl from "../../../hooks/useApiBaseUrl";
+
 
 interface User {
   id: number;
@@ -41,6 +43,8 @@ export default function BasicTableOne() {
     setSelectedUser(null);
   };
 
+  const apiBaseUrl = useApiBaseUrl(); // use of hook
+
   useEffect(() => {
     const fetchUsers = async () => {
       const token = localStorage.getItem("token");
@@ -51,7 +55,7 @@ export default function BasicTableOne() {
 
       try { //https://sms-blast-backend.onrender.com/api
         // const res = await fetch("http://localhost:4000/api/users", 
-        const res = await fetch("https://sms-blast-backend.onrender.com/api/users",
+        const res = await fetch(`${apiBaseUrl}/api/users`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

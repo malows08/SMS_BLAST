@@ -3,7 +3,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { MessageCircle, CheckCircle } from "lucide-react";
 import { apiConfig } from "../../settings"; // Importing the centralized API config
-import { useSmsProvider } from "../../context/SmsProviderContext";
+//import { useSmsProvider } from "../../context/SmsProviderContext";
 
 export default function EcommerceMetrics() {
     const [stats, setStats] = useState({
@@ -17,23 +17,22 @@ export default function EcommerceMetrics() {
     const today = new Date();
     const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     const [endDate] = useState(formattedToday);
-    const { provider } = useSmsProvider(); //provider switching
+    //const { provider } = useSmsProvider(); //provider switching
 
     useEffect(() => {
         const fetchSMSStats = async () => {
             setLoading(true);
             setError("");
             try {
-                const isKizuna = provider === "kizuna-sms";
-                const apiKeyToUse = isKizuna ? apiConfig.newApiKey : apiConfig.apiKey;
-                const clientIdToUse = isKizuna ? apiConfig.newClientId : apiConfig.clientId;
+                const apiKeyToUse = apiConfig.newApiKey; // kizuna-sms default
+                const clientIdToUse = apiConfig.newClientId;
 
                 const response = await axios.get(
                     `https://app.brandtxt.io/api/v2/ReportSummary?ApiKey=${apiKeyToUse}&ClientId=${clientIdToUse}&start=0&length=100&fromdate=${endDate}&enddate=${endDate}`
                 );
 
                 const data = response.data;
-                //console.log(data)
+
                 setStats({
                     totalSent: data.Data[0]?.TOTALCOUNT ?? 0,
                     totalDelivered: data.Data[0]?.DELIVRD ?? 0,
@@ -48,10 +47,8 @@ export default function EcommerceMetrics() {
             }
         };
 
-        if (provider) {
-            fetchSMSStats();
-        }
-    }, [provider]);
+        fetchSMSStats(); // run on mount
+    }, [endDate]);
 
     return (
         <div className="flex flex-col gap-y-4">

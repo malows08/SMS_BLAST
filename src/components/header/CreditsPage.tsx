@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { apiConfig } from "../../settings";
 import { useRefresh } from "../../context/RefreshContext";
-import { useSmsProvider } from "../../context/SmsProviderContext";
+//import { useSmsProvider } from "../../context/SmsProviderContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
+import useApiBaseUrl from "../../hooks/useApiBaseUrl";
 
 
 const CreditsPage: React.FC = () => {
   const { refreshKey, refresh } = useRefresh();
-  const { provider } = useSmsProvider();
+  //const { provider } = useSmsProvider();
   const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +17,7 @@ const CreditsPage: React.FC = () => {
 
   const [fname, setFname] = useState<string | null>(null);
   const [userCredit, setUserCredit] = useState<number>(0);
+  const { apiBaseUrl } = useApiBaseUrl();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -39,7 +41,11 @@ const CreditsPage: React.FC = () => {
     }
 
     try {//https://sms-blast-backend.onrender.com for local http://localhost:4000/api/credits
-      const response = await fetch("https://sms-blast-backend.onrender.com/api/credits",
+      if (loading || !apiBaseUrl) {
+        alert("API base URL not ready");
+        return;
+      }
+      const response = await fetch(`${apiBaseUrl}/api/credits`,
         //const response = await fetch("http://localhost:4000/api/credits",
         {
           headers: {

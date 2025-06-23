@@ -5,6 +5,7 @@ import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
+import useApiBaseUrl from "../../hooks/useApiBaseUrl";
 
 export default function SignInForm() {
   const [email, setEmail] = useState("");
@@ -12,19 +13,17 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const navigate = useNavigate();
+  const { apiBaseUrl } = useApiBaseUrl();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {//https://sms-blast-backend.onrender.com for local http://localhost:4000/api/login
-
-      const response = await fetch("https://sms-blast-backend.onrender.com/api/login",
-        //const response = await fetch("http://localhost:4000/api/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
+      const response = await fetch(`${apiBaseUrl}/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await response.json();
 

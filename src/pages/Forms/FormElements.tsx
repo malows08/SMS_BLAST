@@ -13,7 +13,7 @@ import { Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { apiConfig } from "../../settings";
 import { useRefresh } from "../../context/RefreshContext";
-import { useSmsProvider } from "../../context/SmsProviderContext";
+//import { useSmsProvider } from "../../context/SmsProviderContext";
 import toast from "react-hot-toast";
 
 export default function ComposeSMS() {
@@ -211,9 +211,9 @@ export default function ComposeSMS() {
     setIsSending(false);
     toast.success(`✅ SMS Sending Complete!
       Sent: ${sendingProgress.sent}
-      Failed: ${sendingProgress.failed}`,{
-        position: 'top-center',
-      });
+      Failed: ${sendingProgress.failed}`, {
+      position: 'top-center',
+    });
     refresh();
 
     // setTimeout(() => {

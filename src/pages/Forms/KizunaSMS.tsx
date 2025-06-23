@@ -13,6 +13,7 @@ import { useRefresh } from "../../context/RefreshContext";
 import { useSenderId } from "../../context/SenderIdContext";
 import toast from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
+import useApiBaseUrl from "../../hooks/useApiBaseUrl";
 
 interface ProviderInfo {
   id: number;
@@ -42,6 +43,7 @@ export default function KizunaSMS() {
   const [contactsError, setContactsError] = useState("");
   const [uid, setUid] = useState<number>(0);
   const [userCredit, setUserCredit] = useState<number>(0);
+  const { apiBaseUrl } = useApiBaseUrl();
   const maxLength = 1500;
 
   useEffect(() => {
@@ -54,12 +56,15 @@ export default function KizunaSMS() {
   }, []);
 
   useEffect(() => {
+    if (!apiBaseUrl) return;
+
     const fetchProviders = async () => {
       setLoadingProviders(true);
       try {//for render https://sms-blast-backend.onrender.com/api
         // const res = await fetch("http://localhost:4000/api/sender-ids");
-        const res = await fetch("https://sms-blast-backend.onrender.com/api/sender-ids");
+        const res = await fetch(`${apiBaseUrl}/api/sender-ids`);
         const data = await res.json();
+        console.log(data)
         if (Array.isArray(data)) {
           setProviders(data);
           if (!selectedProvider && data.length > 0) {
@@ -74,7 +79,7 @@ export default function KizunaSMS() {
       }
     };
     fetchProviders();
-  }, []);
+  }, [apiBaseUrl]);
 
   const handleProviderChange = (providerId: string) => {
     const selected = providers.find((p) => p.id.toString() === providerId);
@@ -220,7 +225,7 @@ export default function KizunaSMS() {
         };
 
         try { // for render https://sms-blast-backend.onrender.com/api
-          const response = await fetch("https://sms-blast-backend.onrender.com/api/sms-insert",
+          const response = await fetch(`${apiBaseUrl}/api/sms-insert`,
             // const response = await fetch("http://localhost:4000/api/sms-insert", 
             {
               method: "POST",
@@ -248,7 +253,7 @@ export default function KizunaSMS() {
 
     // ✅ Deduct credits after successful send
     try { // for render https://sms-blast-backend.onrender.com/api
-      const response = await fetch("https://sms-blast-backend.onrender.com/api/credits_deduct",
+      const response = await fetch(`${apiBaseUrl}/api/credits_deduct`,
         // const response = await fetch("http://localhost:4000/api/credits_deduct",
         {
           method: "POST",

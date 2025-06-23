@@ -4,11 +4,13 @@ import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
+import useApiBaseUrl from "../../hooks/useApiBaseUrl";
 
 export default function SignUpForm({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const navigate = useNavigate(); // ✅ initialize navigator
+  const { apiBaseUrl } = useApiBaseUrl();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +25,7 @@ export default function SignUpForm({ onLogin }) {
     };
 
     try { //https://sms-blast-backend.onrender.com for local http://localhost:4000/api/signup
-      const res = await fetch("https://sms-blast-backend.onrender.com/api/signup",
+      const res = await fetch(`${apiBaseUrl}/api/signup`,
         //const res = await fetch("http://localhost:4000/api/signup",
         {
           method: "POST",
