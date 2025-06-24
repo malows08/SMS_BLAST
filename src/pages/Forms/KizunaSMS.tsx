@@ -45,6 +45,12 @@ export default function KizunaSMS() {
   const [userCredit, setUserCredit] = useState<number>(0);
   const { apiBaseUrl } = useApiBaseUrl();
   const maxLength = 1500;
+  // for campaign name
+  const campaignName = `Camp_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}_${new Date().toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  })}`;
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -217,6 +223,7 @@ export default function KizunaSMS() {
           ServiceId: "",
           apikey: selectedProvider.apiKey || "",
           clientId: selectedProvider.clientId || "",
+          campaignName,// added campaign name
         }));
 
         const fullPayload = {
@@ -321,11 +328,6 @@ export default function KizunaSMS() {
     fileType === "txt" ? reader.readAsText(file) : reader.readAsArrayBuffer(file);
   };
 
-  const campaignName = `Camp_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}_${new Date().toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  })}`;
 
   return (
     <div className="bg-gray-100 p-4 rounded-xl min-h-screen">
