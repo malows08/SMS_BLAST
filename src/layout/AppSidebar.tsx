@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
     name: "Reports",
     icon: <TableIcon />,
     subItems: [
-      { name: "Campaign Reports", path: "/error-404", pro: false },
+      { name: "Campaign Reports", path: "/dashboard/campaign-reports", pro: false },
       { name: "My Schedule", path: "/dashboard/calendar", pro: false },
     ],
   },

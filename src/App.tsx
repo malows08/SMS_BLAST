@@ -14,6 +14,7 @@ import BarChart from "./pages/Charts/BarChart";
 import Calendar from "./pages/Calendar";
 import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
+import CampaignReports from "./components/grid/CampaignReports";
 import KizunaSMS from "./pages/Forms/KizunaSMS";
 import QuickSend from "./pages/Forms/QuickSend";
 import Blank from "./pages/Blank";
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="calendar" element={<Calendar />} />
             <Route path="blank" element={<Blank />} />
             <Route path="form-elements" element={<FormElements />} />
+            <Route path="campaign-reports" element={<CampaignReports />} />
             <Route path="kizuna-sms" element={<KizunaSMS />} />
             <Route path="quick-send" element={<QuickSend />} />
             <Route path="role-tables" element={<BasicTables />} />
