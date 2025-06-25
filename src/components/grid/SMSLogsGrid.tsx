@@ -154,22 +154,27 @@ const SMSLogsGrid = () => {
                     <th className="p-2 border">📁 Campaign</th>
                     <th className="p-2 border">📡 Provider</th>
                     <th className="p-2 border">📨 Total SMS</th>
-                    <th className="p-2 border">✅ Success</th>
-                    <th className="p-2 border">⏳ Pending</th>
+                    <th className="p-2 border">📩 Message</th>
+                    <th className="p-2 border">📊 Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedLogs.map((log, index) => (
-                    <tr key={index} className="border">
-                      <td className="p-2 border font-medium">
-                        {campaignNameMap[log.campaignName] || log.campaignName}
-                      </td>
-                      <td className="p-2 border">{log.provider}</td>
-                      <td className="p-2 border">{log.totalSMS.toLocaleString()}</td>
-                      <td className="p-2 border text-green-600">{log.success.toLocaleString()}</td>
-                      <td className="p-2 border text-yellow-600">{log.pending.toLocaleString()}</td>
-                    </tr>
-                  ))}
+                  {paginatedLogs.map((log, index) => {
+                    const status = log.pending > 0 ? "Pending" : "Success";
+                    return (
+                      <tr key={index} className="border">
+                        <td className="p-2 border font-medium">
+                          {campaignNameMap[log.campaignName] || log.campaignName}
+                        </td>
+                        <td className="p-2 border">{log.provider}</td>
+                        <td className="p-2 border">{log.totalSMS.toLocaleString()}</td>
+                        <td className="p-2 border">{log.message || "—"}</td>
+                        <td className={`p-2 border font-medium ${status === "Success" ? "text-green-600" : "text-yellow-600"}`}>
+                          {status}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
