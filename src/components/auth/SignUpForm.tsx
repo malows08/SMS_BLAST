@@ -8,13 +8,17 @@ import useApiBaseUrl from "../../hooks/useApiBaseUrl";
 
 export default function SignUpForm({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(true);
   const navigate = useNavigate(); // ✅ initialize navigator
   const { apiBaseUrl } = useApiBaseUrl();
+
+  //for loding
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
+    setLoading(true);
 
     const data = {
       fname: form.fname.value,
@@ -44,6 +48,7 @@ export default function SignUpForm({ onLogin }) {
     } catch (err) {
       console.error("Signup error:", err);
       alert("Something went wrong during signup.");
+      setLoading(false);
     }
   };
 

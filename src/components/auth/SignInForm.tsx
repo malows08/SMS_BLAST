@@ -11,12 +11,15 @@ export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(true);
   const navigate = useNavigate();
   const { apiBaseUrl } = useApiBaseUrl();
+  //for loading
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {//https://sms-blast-backend.onrender.com for local http://localhost:4000/api/login
       const response = await fetch(`${apiBaseUrl}/api/login`, {
@@ -29,6 +32,7 @@ export default function SignInForm() {
 
       if (!response.ok) {
         alert(data.error || "Login failed");
+        setIsLoading(false);
         return;
       }
 
@@ -40,6 +44,7 @@ export default function SignInForm() {
       navigate("/dashboard");
     } catch (err) {
       alert("Login error: " + err.message);
+      setIsLoading(false);
     }
   };
 
@@ -137,8 +142,34 @@ export default function SignInForm() {
                 </Link>
               </div>
               <div>
-                <Button className="w-full" size="sm" type="submit">
-                  Sign in
+                <Button className="w-full" size="sm" type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                      Signing in...
+                    </div>
+                  ) : (
+                    "Sign in"
+                  )}
                 </Button>
               </div>
             </div>
