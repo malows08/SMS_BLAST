@@ -69,7 +69,7 @@ const navItems: NavItem[] = [
     icon: <PlugInIcon />,
     subItems: [
       { name: "User Profile", path: "/dashboard/profile", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
+      // { name: "404 Error", path: "/error-404", pro: false },
     ],
   },
   // {
@@ -270,37 +270,46 @@ const AppSidebar: React.FC = () => {
                 <ul className="mt-2 space-y-1 ml-9">
                   {nav.subItems.map((subItem) => (
                     <li key={subItem.name}>
-                      <Link
-                        to={subItem.path}
-                        className={`menu-dropdown-item ${isActive(subItem.path)
-                          ? "menu-dropdown-item-active"
-                          : "menu-dropdown-item-inactive"
-                          }`}
-                      >
-                        {subItem.name}
-                        <span className="flex items-center gap-1 ml-auto">
-                          {subItem.new && (
-                            <span
-                              className={`ml-auto ${isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                                } menu-dropdown-badge`}
-                            >
-                              new
-                            </span>
-                          )}
-                          {subItem.pro && (
-                            <span
-                              className={`ml-auto ${isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                                } menu-dropdown-badge`}
-                            >
-                              pro
-                            </span>
-                          )}
+                      {subItem.path === "/error-404" ? (
+                        <span
+                          className="menu-dropdown-item text-gray-400 cursor-not-allowed pointer-events-none"
+                          title="This feature is not available"
+                        >
+                          {subItem.name}
                         </span>
-                      </Link>
+                      ) : (
+                        <Link
+                          to={subItem.path}
+                          className={`menu-dropdown-item ${isActive(subItem.path)
+                            ? "menu-dropdown-item-active"
+                            : "menu-dropdown-item-inactive"
+                            }`}
+                        >
+                          {subItem.name}
+                          <span className="flex items-center gap-1 ml-auto">
+                            {subItem.new && (
+                              <span
+                                className={`ml-auto ${isActive(subItem.path)
+                                  ? "menu-dropdown-badge-active"
+                                  : "menu-dropdown-badge-inactive"
+                                  } menu-dropdown-badge`}
+                              >
+                                new
+                              </span>
+                            )}
+                            {subItem.pro && (
+                              <span
+                                className={`ml-auto ${isActive(subItem.path)
+                                  ? "menu-dropdown-badge-active"
+                                  : "menu-dropdown-badge-inactive"
+                                  } menu-dropdown-badge`}
+                              >
+                                pro
+                              </span>
+                            )}
+                          </span>
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>

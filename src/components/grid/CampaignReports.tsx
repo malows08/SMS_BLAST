@@ -21,6 +21,7 @@ const CampaignReports = () => {
     const [campaignLogs, setCampaignLogs] = useState<GroupedCampaign[]>([]);
     const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
     const { apiBaseUrl } = useApiBaseUrl();
+    const [loadingCampaigns, setLoadingCampaigns] = useState(false);
 
     useEffect(() => {
         const fetchClients = async () => {
@@ -38,6 +39,7 @@ const CampaignReports = () => {
     }, [apiBaseUrl]);
 
     const fetchLogs = async () => {
+        setLoadingCampaigns(true);
         try {
             const token = localStorage.getItem("token");
             const response = await axios.get(`${apiBaseUrl}/api/smslogs/get-campaign-logs`, {
@@ -48,6 +50,8 @@ const CampaignReports = () => {
             setSelectedCampaigns([]);
         } catch (err) {
             console.error("Error fetching campaign logs:", err);
+        } finally {
+            setLoadingCampaigns(false);
         }
     };
 
@@ -156,36 +160,54 @@ const CampaignReports = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {campaignLogs.map((campaign, index) => (
-                            <React.Fragment key={index}>
-                                {/* Campaign Name Row */}
-                                <tr className="bg-gray-200 font-semibold">
-                                    <td className="p-2 border text-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={isChecked(campaign.campaignName)}
-                                            onChange={() =>
-                                                toggleCampaignSelection(campaign.campaignName)
-                                            }
-                                        />
-                                    </td>
-                                    <td className="p-2 border" colSpan={4}>
-                                        {campaign.campaignName}
-                                    </td>
-                                </tr>
-
-                                {/* Messages for the Campaign */}
-                                {campaign.messages.map((msg, i) => (
-                                    <tr key={i} className="border">
-                                        <td className="p-2 border"></td>
-                                        <td className="p-2 border"></td>
-                                        <td className="p-2 border">{msg.mobilenumbers}</td>
-                                        <td className="p-2 border">{msg.message}</td>
-                                        <td className="p-2 border">{msg.sms_status}</td>
+                        {loadingCampaigns ? (
+                            <tr>
+                                <td colSpan={5} className="p-4 text-center">
+                                    <div className="flex justify-center items-center gap-2">
+                                        <svg className="animate-spin h-5 w-5 text-gray-600" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8z" />
+                                        </svg>
+                                        <span>Loading campaigns...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : campaignLogs.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="p-4 text-center text-gray-500">
+                                    No campaign data found.
+                                </td>
+                            </tr>
+                        ) : (
+                            campaignLogs.map((campaign, index) => (
+                                <React.Fragment key={index}>
+                                    {/* Campaign Name Row */}
+                                    <tr className="bg-gray-200 font-semibold">
+                                        <td className="p-2 border text-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={isChecked(campaign.campaignName)}
+                                                onChange={() => toggleCampaignSelection(campaign.campaignName)}
+                                            />
+                                        </td>
+                                        <td className="p-2 border" colSpan={4}>
+                                            {campaign.campaignName}
+                                        </td>
                                     </tr>
-                                ))}
-                            </React.Fragment>
-                        ))}
+
+                                    {/* Messages for the Campaign */}
+                                    {campaign.messages.map((msg, i) => (
+                                        <tr key={i} className="border">
+                                            <td className="p-2 border"></td>
+                                            <td className="p-2 border"></td>
+                                            <td className="p-2 border">{msg.mobilenumbers}</td>
+                                            <td className="p-2 border">{msg.message}</td>
+                                            <td className="p-2 border">{msg.sms_status}</td>
+                                        </tr>
+                                    ))}
+                                </React.Fragment>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </CardContent>

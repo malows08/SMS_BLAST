@@ -40,6 +40,7 @@ export default function SignUpForm({ onLogin }) {
       const result = await res.json();
       if (res.ok) {
         localStorage.setItem("token", result.token);
+        alert("Signup successful!");
         if (onLogin) onLogin();
         navigate("/"); // ✅ Redirect to sign-in page
       } else {
@@ -48,6 +49,7 @@ export default function SignUpForm({ onLogin }) {
     } catch (err) {
       console.error("Signup error:", err);
       alert("Something went wrong during signup.");
+    } finally {
       setLoading(false);
     }
   };
