@@ -5,6 +5,7 @@ import { Card, CardContent } from "../../components/ui/card";
 import useApiBaseUrl from "../../hooks/useApiBaseUrl";
 
 type CampaignMessage = {
+    id: number;
     mobilenumbers: string;
     message: string;
     sms_status: string;
@@ -22,6 +23,7 @@ const CampaignReports = () => {
     const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
     const { apiBaseUrl } = useApiBaseUrl();
     const [loadingCampaigns, setLoadingCampaigns] = useState(false);
+    const [userRole, setUserRole] = useState<"admin" | "client" | null>(null);
 
     useEffect(() => {
         const fetchClients = async () => {
@@ -36,6 +38,21 @@ const CampaignReports = () => {
             }
         };
         fetchClients();
+    }, [apiBaseUrl]);
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get(`${apiBaseUrl}/api/smslogs/me`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setUserRole(response.data.role);
+            } catch (err) {
+                console.error("Failed to fetch user info", err);
+            }
+        };
+        fetchUserInfo();
     }, [apiBaseUrl]);
 
     const fetchLogs = async () => {
@@ -94,24 +111,20 @@ const CampaignReports = () => {
         XLSX.writeFile(workbook, fileName);
     };
 
-    const [userRole, setUserRole] = useState<"admin" | "client" | null>(null);
-
-    useEffect(() => {
-        const fetchUserInfo = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const response = await axios.get(`${apiBaseUrl}/api/users/me`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-
-                setUserRole(response.data.role);
-            } catch (err) {
-                console.error("Failed to fetch user info", err);
-            }
-        };
-
-        fetchUserInfo();
-    }, [apiBaseUrl]);
+    const handleUpdateCampaignStatus = async (campaignName: string) => {
+        try {
+            const token = localStorage.getItem("token");
+            await axios.patch(`${apiBaseUrl}/api/smslogs/campaign/${encodeURIComponent(campaignName)}/status`, {
+                status: "success",
+            }, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            fetchLogs();
+        } catch (err) {
+            console.error("Failed to update campaign SMS status", err);
+            alert("Failed to update campaign SMS status");
+        }
+    };
 
     return (
         <Card>
@@ -157,12 +170,13 @@ const CampaignReports = () => {
                             <th className="p-2 border">📱 Mobile Numbers</th>
                             <th className="p-2 border">💬 Message</th>
                             <th className="p-2 border">📌 SMS Status</th>
+                            {userRole === "admin" && <th className="p-2 border">⚙️ Action</th>}
                         </tr>
                     </thead>
                     <tbody>
                         {loadingCampaigns ? (
                             <tr>
-                                <td colSpan={5} className="p-4 text-center">
+                                <td colSpan={6} className="p-4 text-center">
                                     <div className="flex justify-center items-center gap-2">
                                         <svg className="animate-spin h-5 w-5 text-gray-600" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -174,14 +188,13 @@ const CampaignReports = () => {
                             </tr>
                         ) : campaignLogs.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="p-4 text-center text-gray-500">
+                                <td colSpan={6} className="p-4 text-center text-gray-500">
                                     No campaign data found.
                                 </td>
                             </tr>
                         ) : (
                             campaignLogs.map((campaign, index) => (
                                 <React.Fragment key={index}>
-                                    {/* Campaign Name Row */}
                                     <tr className="bg-gray-200 font-semibold">
                                         <td className="p-2 border text-center">
                                             <input
@@ -190,12 +203,22 @@ const CampaignReports = () => {
                                                 onChange={() => toggleCampaignSelection(campaign.campaignName)}
                                             />
                                         </td>
-                                        <td className="p-2 border" colSpan={4}>
+                                        <td className="p-2 border" colSpan={userRole === "admin" ? 4 : 4}>
                                             {campaign.campaignName}
                                         </td>
+                                        {userRole === "admin" && (
+                                            <td className="p-2 border text-center">
+                                                {campaign.messages.some(m => m.sms_status === "pending") && (
+                                                    <button
+                                                        onClick={() => handleUpdateCampaignStatus(campaign.campaignName)}
+                                                        className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                                                    >
+                                                        Mark Success
+                                                    </button>
+                                                )}
+                                            </td>
+                                        )}
                                     </tr>
-
-                                    {/* Messages for the Campaign */}
                                     {campaign.messages.map((msg, i) => (
                                         <tr key={i} className="border">
                                             <td className="p-2 border"></td>
@@ -203,6 +226,7 @@ const CampaignReports = () => {
                                             <td className="p-2 border">{msg.mobilenumbers}</td>
                                             <td className="p-2 border">{msg.message}</td>
                                             <td className="p-2 border">{msg.sms_status}</td>
+                                            {userRole === "admin" && <td className="p-2 border"></td>}
                                         </tr>
                                     ))}
                                 </React.Fragment>

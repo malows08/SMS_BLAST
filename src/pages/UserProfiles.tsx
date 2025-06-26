@@ -18,7 +18,7 @@ export default function UserProfiles() {
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
           User Info
         </h3>
-      {/* <p className="mt-4 text-lg text-gray-700">
+        {/* <p className="mt-4 text-lg text-gray-700">
         Sender ID: <span className="font-mono">{senderId}</span>
       </p> */}
         <div className="space-y-6">
