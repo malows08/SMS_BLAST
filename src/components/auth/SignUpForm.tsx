@@ -20,29 +20,39 @@ export default function SignUpForm({ onLogin }) {
     const form = e.target;
     setLoading(true);
 
+    const fname = form.fname.value.trim();
+    const lname = form.lname.value.trim();
+    const email = form.email.value.trim();
+    const password = form.password.value;
+
+    // Manual validation
+    if (!fname || !lname) {
+      alert("First name and Last name are required.");
+      setLoading(false);
+      return;
+    }
+
     const data = {
-      fname: form.fname.value,
-      lname: form.lname.value,
-      email: form.email.value,
-      password: form.password.value,
-      role: 'client', // static role; change if needed
+      fname,
+      lname,
+      email,
+      password,
+      role: 'client',
     };
 
-    try { //https://sms-blast-backend.onrender.com for local http://localhost:4000/api/signup
-      const res = await fetch(`${apiBaseUrl}/api/signup`,
-        //const res = await fetch("http://localhost:4000/api/signup",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
       const result = await res.json();
       if (res.ok) {
         localStorage.setItem("token", result.token);
         alert("Signup successful!");
         if (onLogin) onLogin();
-        navigate("/"); // ✅ Redirect to sign-in page
+        navigate("/");
       } else {
         alert(`Signup failed: ${result.error}`);
       }
